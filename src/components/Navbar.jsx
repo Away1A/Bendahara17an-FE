@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const { auth, logout } = useAuth(); // ⬅️
+  const { auth, logout } = useAuth();
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
   const closeMenu = () => setIsOpen(false);
@@ -26,7 +26,25 @@ export default function Navbar() {
     </Link>
   );
 
-  const isAdmin = auth.role === "admin";
+  const role = auth.role;
+  const isAdmin = role === "admin";
+  const isMaker = role === "maker" || role === "ketua divisi";
+  const isChecker = role === "checker" || role === "wakil";
+  const isApprover =
+    role === "approver" ||
+    role === "pengurus rt" ||
+    role === "pengurus rw" ||
+    role === "bendahara" ||
+    role === "ketua panitia";
+
+  const getPengajuanPath = () => {
+    if (isMaker) return "/pengajuan/maker";
+    if (isChecker) return "/pengajuan/checker";
+    if (isApprover) return "/pengajuan/approver";
+    return null;
+  };
+
+  const pengajuanPath = getPengajuanPath();
 
   return (
     <nav className="bg-red-600 text-white px-6 py-3 shadow-md sticky top-0 z-50">
@@ -43,6 +61,8 @@ export default function Navbar() {
           {navItem("/", "Dashboard")}
           {isAdmin && navItem("/pemasukan", "Pemasukan")}
           {isAdmin && navItem("/pengeluaran", "Pengeluaran")}
+          {isAdmin && navItem("/pengajuan/admin", "Pengajuan")}
+          {pengajuanPath && navItem(pengajuanPath, "Pengajuan")}
           {navItem("/laporan", "Laporan")}
           <li>
             <button
@@ -61,6 +81,7 @@ export default function Navbar() {
           {navItem("/", "Dashboard")}
           {isAdmin && navItem("/pemasukan", "Pemasukan")}
           {isAdmin && navItem("/pengeluaran", "Pengeluaran")}
+          {pengajuanPath && navItem(pengajuanPath, "Pengajuan")}
           {navItem("/laporan", "Laporan")}
           <li>
             <button
