@@ -5,6 +5,22 @@ import { CheckCircle, Clock, Ban, ThumbsUp, FileCheck2 } from "lucide-react";
 export default function PengajuanAdmin() {
   const [pengajuan, setPengajuan] = useState([]);
   const [loading, setLoading] = useState(true);
+  const boxBgClass = (status) => {
+    switch (status) {
+      case "submitted":
+        return "bg-gray-50";
+      case "checking":
+        return "bg-yellow-50";
+      case "approved":
+        return "bg-blue-50";
+      case "rejected":
+        return "bg-red-50";
+      case "done":
+        return "bg-green-50";
+      default:
+        return "bg-white";
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -96,15 +112,9 @@ export default function PengajuanAdmin() {
           {pengajuan.map((item) => (
             <div
               key={item.id}
-              className={`border border-gray-200 rounded-lg p-5 bg-white shadow-sm transition hover:shadow-md ${
-                item.status === "done"
-                  ? "bg-green-50"
-                  : item.status === "approved"
-                  ? "bg-blue-50"
-                  : item.status === "rejected"
-                  ? "bg-red-50"
-                  : ""
-              }`}
+              className={`border border-gray-200 rounded-lg p-5 shadow-sm transition hover:shadow-md ${boxBgClass(
+                item.status
+              )}`}
             >
               <div className="flex flex-col md:flex-row md:justify-between gap-4">
                 {/* Informasi Utama */}
