@@ -8,4 +8,13 @@ const api = axios.create({
   }, // Ganti jika backend kamu berbeda
 });
 
+// Tambahkan token secara otomatis
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export default api;
