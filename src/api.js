@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:3001/api",
+  baseURL: "https://bendahara17an-be.vercel.app/api",
   headers: {
     "ngrok-skip-browser-warning": "true",
   }, // Ganti jika backend kamu berbeda
