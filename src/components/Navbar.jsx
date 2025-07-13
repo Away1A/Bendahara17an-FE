@@ -1,86 +1,74 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Menu, X } from "lucide-react"; // Optional: pakai icon dari lucide-react
+import { Menu, X, LogOut } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const { auth, logout } = useAuth(); // ⬅️
 
-  const toggleMenu = () => setIsOpen(!isOpen);
+  const toggleMenu = () => setIsOpen((prev) => !prev);
   const closeMenu = () => setIsOpen(false);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const navItem = (to, label) => (
+    <Link
+      to={to}
+      onClick={closeMenu}
+      className="hover:underline block px-2 py-1 rounded-md hover:bg-red-700/30 transition"
+    >
+      {label}
+    </Link>
+  );
+
+  const isAdmin = auth.role === "admin";
 
   return (
     <nav className="bg-red-600 text-white px-6 py-3 shadow-md sticky top-0 z-50">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-wide">💰 Bendahara 17-an</h1>
+        <Link to="/" className="text-xl font-bold tracking-wide">
+          💰 Bendahara&nbsp;17‑an
+        </Link>
 
-        {/* Tombol hamburger (mobile) */}
-        <button
-          onClick={toggleMenu}
-          className="md:hidden focus:outline-none"
-          aria-label="Toggle menu"
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        <button onClick={toggleMenu} className="md:hidden p-1">
+          {isOpen ? <X size={26} /> : <Menu size={26} />}
         </button>
 
-        {/* Menu (desktop) */}
-        <ul className="hidden md:flex gap-4 text-sm font-medium">
+        <ul className="hidden md:flex gap-6 text-sm font-medium items-center">
+          {navItem("/", "Dashboard")}
+          {isAdmin && navItem("/pemasukan", "Pemasukan")}
+          {isAdmin && navItem("/pengeluaran", "Pengeluaran")}
+          {navItem("/laporan", "Laporan")}
           <li>
-            <Link to="/" className="hover:underline">
-              Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link to="/pemasukan" className="hover:underline">
-              Pemasukan
-            </Link>
-          </li>
-          <li>
-            <Link to="/pengeluaran" className="hover:underline">
-              Pengeluaran
-            </Link>
-          </li>
-          <li>
-            <Link to="/laporan" className="hover:underline">
-              Laporan
-            </Link>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-md text-xs transition"
+            >
+              <LogOut size={16} /> Logout
+            </button>
           </li>
         </ul>
       </div>
 
-      {/* Menu (mobile dropdown) */}
+      {/* Mobile Dropdown */}
       {isOpen && (
-        <ul className="mt-2 flex flex-col gap-2 text-sm font-medium md:hidden">
+        <ul className="md:hidden flex flex-col gap-2 mt-2 p-3 bg-red-600/95 rounded-lg text-sm font-medium">
+          {navItem("/", "Dashboard")}
+          {isAdmin && navItem("/pemasukan", "Pemasukan")}
+          {isAdmin && navItem("/pengeluaran", "Pengeluaran")}
+          {navItem("/laporan", "Laporan")}
           <li>
-            <Link to="/" onClick={closeMenu} className="hover:underline block">
-              Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/pemasukan"
-              onClick={closeMenu}
-              className="hover:underline block"
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-1 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-md text-xs transition"
             >
-              Pemasukan
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/pengeluaran"
-              onClick={closeMenu}
-              className="hover:underline block"
-            >
-              Pengeluaran
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/laporan"
-              onClick={closeMenu}
-              className="hover:underline block"
-            >
-              Laporan
-            </Link>
+              <LogOut size={16} /> Logout
+            </button>
           </li>
         </ul>
       )}
