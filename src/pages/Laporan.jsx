@@ -27,11 +27,11 @@ export default function Laporan() {
   };
 
   const downloadExcel = () => {
-    const url = `https://bendahara17an-be.vercel.app/api/laporan-pdf/download-excel?start_date=${startDate}&end_date=${endDate}`;
+    const url = `https://c2c3a710c7ce.ngrok-free.app/api/laporan-pdf/download-excel?start_date=${startDate}&end_date=${endDate}`;
     window.open(url, "_blank");
   };
   const downloadPdf = () => {
-    const url = `https://bendahara17an-be.vercel.app/api/laporan-pdf?start_date=${startDate}&end_date=${endDate}`;
+    const url = `https://c2c3a710c7ce.ngrok-free.app/api/laporan-pdf?start_date=${startDate}&end_date=${endDate}`;
     window.open(url, "_blank");
   };
 
