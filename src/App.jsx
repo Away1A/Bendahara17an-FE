@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 
 import Login from "./pages/Login";
@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Pemasukan from "./pages/Pemasukan";
 import Pengeluaran from "./pages/Pengeluaran";
 import Laporan from "./pages/Laporan";
+import LaporanGuest from "./pages/LaporanGuest";
 import PengajuanMaker from "./pages/pengajuan/PengajuanMaker";
 import PengajuanChecker from "./pages/pengajuan/PengajuanChecker";
 import PengajuanApprover from "./pages/pengajuan/PengajuanApprover";
@@ -24,12 +25,25 @@ export default function App() {
 
         <main className={`${auth.token ? "p-4 max-w-6xl mx-auto" : "p-4"}`}>
           <Routes>
-            {/* Public Route */}
+            {/* Public Routes */}
             <Route path="/login" element={<Login />} />
+            <Route path="/laporan/guest" element={<LaporanGuest />} />
+
+            {/* Route utama diarahkan berdasarkan login */}
+            <Route
+              path="/"
+              element={
+                auth.token ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <Navigate to="/laporan/guest" replace />
+                )
+              }
+            />
 
             {/* Protected Routes */}
             <Route
-              path="/"
+              path="/dashboard"
               element={
                 <PrivateRoute>
                   <Dashboard />
