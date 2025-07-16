@@ -20,7 +20,7 @@ export default function Navbar() {
   };
 
   const role = auth.role;
-  const name = auth.user?.name || "User";
+  const name = auth.user?.username || "User";
   const roleFormatted = role.charAt(0).toUpperCase() + role.slice(1);
 
   const isAdmin = role === "admin";

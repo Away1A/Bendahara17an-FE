@@ -66,7 +66,7 @@ export default function LaporanGuest() {
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-10 px-4 sm:px-10 space-y-10">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-extrabold text-gray-800">
-          📋 Laporan Keuangan RW 09 Cluster Palem
+          📋 Laporan Keuangan Forum Remaja RW 09
         </h2>
         <button
           onClick={() => navigate("/login")}

@@ -19,9 +19,9 @@ export default function Login() {
 
     try {
       const res = await api.post("/auth/login", form);
-      const { token, role } = res.data;
+      const { token, role, user } = res.data;
 
-      login(token, role); // Simpan via context
+      login(token, role, user); // Simpan via context
       navigate("/");
       // eslint-disable-next-line no-unused-vars
     } catch (err) {
