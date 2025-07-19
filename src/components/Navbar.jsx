@@ -39,13 +39,12 @@ export default function Navbar() {
     <Link
       to={to}
       onClick={closeMenu}
-      className="hover:underline block px-2 py-1 rounded-md hover:bg-red-700/30 transition"
+      className="hover:bg-black/5 hover:text-red-700 transition px-4 py-2 rounded-md font-semibold text-sm"
     >
       {label}
     </Link>
   );
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -57,20 +56,26 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="bg-red-600 text-white px-6 py-3 shadow-md sticky top-0 z-50">
-      <div className="flex items-center justify-between">
+    <nav className="bg-gradient-to-r from-red-500 via-pink-500 to-orange-400 text-white px-6 py-4 shadow-lg sticky top-0 z-50 backdrop-blur-md">
+      <div className="flex items-center justify-between max-w-7xl mx-auto">
         {/* Brand */}
-        <Link to="/" className="text-xl font-bold tracking-wide">
-          💰 Bendahara&nbsp;17‑an
+        <Link
+          to="/"
+          className="text-2xl font-extrabold tracking-wide flex items-center gap-2"
+        >
+          <span>💰</span> <span>FORUM REMAJA</span>
         </Link>
 
-        {/* Mobile Hamburger */}
-        <button onClick={toggleMenu} className="md:hidden p-1">
-          {isOpen ? <X size={26} /> : <Menu size={26} />}
+        {/* Mobile Button */}
+        <button
+          onClick={toggleMenu}
+          className="md:hidden p-2 rounded-lg bg-white/20 hover:bg-white/30 transition"
+        >
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium">
+        <div className="hidden md:flex items-center gap-6 text-sm font-semibold">
           {navItem("/", "Dashboard")}
           {isAdmin && navItem("/pemasukan", "Pemasukan")}
           {isAdmin && navItem("/pengeluaran", "Pengeluaran")}
@@ -86,28 +91,28 @@ export default function Navbar() {
             )}
           {navItem("/laporan", "Laporan")}
 
-          {/* User Info + Dropdown */}
+          {/* Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={toggleDropdown}
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition text-sm"
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-full transition text-sm font-semibold"
             >
               <img
-                src="https://ui-avatars.com/api/?name=User&background=ffffff&color=ff0000&size=32"
+                src={`https://ui-avatars.com/api/?name=${name}&background=ffffff&color=ff0000&size=32`}
                 alt="avatar"
-                className="w-7 h-7 rounded-full object-cover"
+                className="w-8 h-8 rounded-full object-cover"
               />
-              <span className="hidden md:inline">
+              <span>
                 {name} ({roleFormatted})
               </span>
               <ChevronDown size={16} />
             </button>
 
             {showDropdown && (
-              <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded shadow-lg z-50 animate-fadeIn">
+              <div className="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-xl shadow-xl z-50 animate-fade-in-down overflow-hidden">
                 <button
                   onClick={handleLogout}
-                  className="w-full px-4 py-2 text-sm hover:bg-gray-100 text-left flex items-center gap-2"
+                  className="w-full px-5 py-3 text-left hover:bg-gray-100 flex items-center gap-2 text-sm font-medium"
                 >
                   <LogOut size={16} /> Logout
                 </button>
@@ -119,7 +124,7 @@ export default function Navbar() {
 
       {/* Mobile Dropdown */}
       {isOpen && (
-        <ul className="md:hidden flex flex-col gap-2 mt-2 p-3 bg-red-600/95 rounded-lg text-sm font-medium">
+        <div className="md:hidden flex flex-col mt-4 gap-2 bg-white/10 rounded-xl p-4 text-sm font-semibold">
           {navItem("/", "Dashboard")}
           {isAdmin && navItem("/pemasukan", "Pemasukan")}
           {isAdmin && navItem("/pengeluaran", "Pengeluaran")}
@@ -136,11 +141,11 @@ export default function Navbar() {
           {navItem("/laporan", "Laporan")}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-2 rounded text-xs transition"
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-3 rounded-lg transition"
           >
             <LogOut size={16} /> Logout
           </button>
-        </ul>
+        </div>
       )}
     </nav>
   );

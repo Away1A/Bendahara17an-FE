@@ -56,28 +56,27 @@ export default function PengajuanMaker() {
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md border border-gray-100">
-      <h2 className="text-2xl font-bold text-red-600 mb-6 flex items-center gap-2">
-        <ClipboardEdit size={22} /> Form Pengajuan Dana
+    <div className="max-w-2xl mx-auto bg-white p-10 rounded-3xl shadow-xl border border-gray-100 space-y-6">
+      <h2 className="text-3xl font-bold text-red-700 mb-4 flex items-center gap-3">
+        <ClipboardEdit size={28} /> Form Pengajuan Dana
       </h2>
 
       {error && (
-        <div className="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded-md flex items-center gap-2 mb-4 text-sm">
-          <XCircle size={16} /> {error}
+        <div className="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded-lg flex items-center gap-2 text-sm shadow">
+          <XCircle size={18} /> {error}
         </div>
       )}
 
       {success && (
-        <div className="bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded-md flex items-center gap-2 mb-4 text-sm">
-          <CheckCircle size={16} /> {success}
+        <div className="bg-green-100 border border-green-300 text-green-800 px-4 py-3 rounded-lg flex items-center gap-2 text-sm shadow">
+          <CheckCircle size={18} /> {success}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-semibold mb-1">
-            <FileText size={14} className="inline mr-1" />
-            Judul Pengajuan
+          <label className="block text-sm font-bold mb-2">
+            <FileText size={16} className="inline mr-2" /> Judul Pengajuan
           </label>
           <input
             type="text"
@@ -86,35 +85,33 @@ export default function PengajuanMaker() {
             onChange={handleChange}
             required
             placeholder="Contoh: Panggung Malam Puncak"
-            className="w-full border border-gray-300 focus:ring-2 focus:ring-red-400 rounded-md px-3 py-2 transition"
+            className="w-full border border-gray-300 focus:ring-4 focus:ring-red-400 rounded-xl px-4 py-3 transition text-sm shadow-sm"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-1">
-            <FileText size={14} className="inline mr-1" />
-            Deskripsi Kebutuhan
+          <label className="block text-sm font-bold mb-2">
+            <FileText size={16} className="inline mr-2" /> Deskripsi Kebutuhan
           </label>
           <textarea
             name="deskripsi"
             value={form.deskripsi}
             onChange={handleChange}
-            rows={3}
+            rows={4}
             placeholder="Contoh: Rigging panggung, videotron, sound system..."
-            className="w-full border border-gray-300 focus:ring-2 focus:ring-red-400 rounded-md px-3 py-2 transition"
+            className="w-full border border-gray-300 focus:ring-4 focus:ring-red-400 rounded-xl px-4 py-3 transition text-sm shadow-sm"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-1">
-            <Layers size={14} className="inline mr-1" />
-            Divisi
+          <label className="block text-sm font-bold mb-2">
+            <Layers size={16} className="inline mr-2" /> Divisi
           </label>
           <select
             name="divisi"
             value={form.divisi}
             onChange={handleChange}
-            className="w-full border border-gray-300 focus:ring-2 focus:ring-red-400 rounded-md px-3 py-2 transition"
+            className="w-full border border-gray-300 focus:ring-4 focus:ring-red-400 rounded-xl px-4 py-3 transition text-sm shadow-sm"
             required
           >
             <option value="Acara">Acara</option>
@@ -126,9 +123,8 @@ export default function PengajuanMaker() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-1">
-            <DollarSign size={14} className="inline mr-1" />
-            Jumlah Dana (Rp)
+          <label className="block text-sm font-bold mb-2">
+            <DollarSign size={16} className="inline mr-2" /> Jumlah Dana (Rp)
           </label>
           <input
             type="number"
@@ -137,16 +133,16 @@ export default function PengajuanMaker() {
             onChange={handleChange}
             required
             placeholder="Contoh: 5000000"
-            className="w-full border border-gray-300 focus:ring-2 focus:ring-red-400 rounded-md px-3 py-2 transition"
+            className="w-full border border-gray-300 focus:ring-4 focus:ring-red-400 rounded-xl px-4 py-3 transition text-sm shadow-sm"
           />
         </div>
 
         <div className="pt-4">
           <button
             type="submit"
-            className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 justify-center px-5 py-2 rounded-md transition shadow"
+            className="w-full bg-red-600 hover:bg-red-700 text-white flex items-center gap-3 justify-center px-5 py-3 rounded-xl transition shadow-lg text-sm font-bold"
           >
-            <Send size={16} /> Kirim Pengajuan
+            <Send size={18} /> Kirim Pengajuan
           </button>
         </div>
       </form>
