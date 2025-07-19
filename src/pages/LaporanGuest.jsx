@@ -13,6 +13,15 @@ import {
   Filler,
 } from "chart.js";
 import { Bar, Line } from "react-chartjs-2";
+import {
+  FiDownload,
+  FiLock,
+  FiTrendingUp,
+  FiTrendingDown,
+  FiDollarSign,
+  FiPieChart,
+  FiBarChart2,
+} from "react-icons/fi";
 
 ChartJS.register(
   BarElement,
@@ -35,6 +44,7 @@ export default function LaporanGuest() {
   const [summary, setSummary] = useState({});
   const [startDate, setStartDate] = useState(getToday());
   const [endDate, setEndDate] = useState(getToday());
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,9 +52,18 @@ export default function LaporanGuest() {
   }, [startDate, endDate]);
 
   const fetchData = () => {
+    setLoading(true);
     const params = { start_date: startDate, end_date: endDate };
-    api.get("/laporan/rekap", { params }).then((res) => setRekap(res.data));
-    api.get("/laporan/summary", { params }).then((res) => setSummary(res.data));
+
+    Promise.all([
+      api.get("/laporan/rekap", { params }),
+      api.get("/laporan/summary", { params }),
+    ])
+      .then(([rekapRes, summaryRes]) => {
+        setRekap(rekapRes.data);
+        setSummary(summaryRes.data);
+      })
+      .finally(() => setLoading(false));
   };
 
   const downloadExcel = () => {
@@ -57,165 +76,235 @@ export default function LaporanGuest() {
     window.open(url, "_blank");
   };
 
-  const findMax = (arr) =>
-    arr.length > 0
-      ? arr.reduce((a, b) => (a.total > b.total ? a : b)).kategori
-      : "-";
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white py-10 px-4 sm:px-10 space-y-10">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-extrabold text-gray-800">
-          📋 Laporan Keuangan Forum Remaja RW 09
-        </h2>
-        <button
-          onClick={() => navigate("/login")}
-          className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm shadow-lg"
-        >
-          🔐 Login
-        </button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+              <FiPieChart className="mr-3 text-blue-600" />
+              Laporan Keuangan
+            </h1>
+            <p className="text-gray-600 mt-1">Forum Remaja RW 09</p>
+          </div>
+          <button
+            onClick={() => navigate("/login")}
+            className="mt-4 sm:mt-0 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+          >
+            <FiLock className="text-lg" />
+            Login Admin
+          </button>
+        </div>
 
-      <div className="bg-white p-6 rounded-2xl shadow-lg space-y-6">
-        <div className="flex flex-col md:flex-row md:items-end gap-6">
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">
-              Dari Tanggal
-            </label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full border px-3 py-2 rounded-md shadow-sm"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">
-              Sampai Tanggal
-            </label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full border px-3 py-2 rounded-md shadow-sm"
-            />
-          </div>
-          <div className="flex flex-row gap-3">
-            <button
-              onClick={downloadPdf}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm shadow"
-            >
-              📥 PDF
-            </button>
-            <button
-              onClick={downloadExcel}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm shadow"
-            >
-              🧾 Excel
-            </button>
+        {/* Filters & Actions */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Dari Tanggal
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sampai Tanggal
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              />
+            </div>
+            <div className="flex flex-col justify-end">
+              <div className="flex gap-3">
+                <button
+                  onClick={downloadPdf}
+                  className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-md"
+                >
+                  <FiDownload />
+                  PDF
+                </button>
+                <button
+                  onClick={downloadExcel}
+                  className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-md"
+                >
+                  <FiDownload />
+                  Excel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatBox
-          title="Total Pemasukan"
-          value={summary.total_pemasukan}
-          color="green"
-        />
-        <StatBox
-          title="Total Pengeluaran"
-          value={summary.total_pengeluaran}
-          color="red"
-        />
-        <StatBox title="Saldo Saat Ini" value={summary.saldo} color="blue" />
-      </div>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <StatBox
+            title="Total Pemasukan"
+            value={summary.total_pemasukan}
+            color="green"
+            icon={<FiTrendingUp className="text-xl" />}
+          />
+          <StatBox
+            title="Total Pengeluaran"
+            value={summary.total_pengeluaran}
+            color="red"
+            icon={<FiTrendingDown className="text-xl" />}
+          />
+          <StatBox
+            title="Saldo Saat Ini"
+            value={summary.saldo}
+            color="blue"
+            icon={<FiDollarSign className="text-xl" />}
+          />
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <CombinedBarChart
-          pemasukan={rekap.rekap_pemasukan}
-          pengeluaran={rekap.rekap_pengeluaran}
-        />
-        <LineChart data={rekap} />
-      </div>
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-xl shadow-lg p-5">
+            <div className="flex items-center gap-2 mb-5">
+              <FiBarChart2 className="text-blue-600 text-xl" />
+              <h3 className="text-lg font-semibold text-gray-800">
+                Perbandingan Kategori
+              </h3>
+            </div>
+            <CombinedBarChart
+              pemasukan={rekap.rekap_pemasukan}
+              pengeluaran={rekap.rekap_pengeluaran}
+              loading={loading}
+            />
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <RekapBox
-          title="📈 Pemasukan per Kategori"
-          data={rekap.rekap_pemasukan}
-          color="green"
-        />
-        <RekapBox
-          title="📉 Pengeluaran per Kategori"
-          data={rekap.rekap_pengeluaran}
-          color="red"
-        />
-      </div>
+          <div className="bg-white rounded-xl shadow-lg p-5">
+            <div className="flex items-center gap-2 mb-5">
+              <FiTrendingUp className="text-blue-600 text-xl" />
+              <h3 className="text-lg font-semibold text-gray-800">
+                Trend Pemasukan
+              </h3>
+            </div>
+            <LineChart data={rekap} loading={loading} />
+          </div>
+        </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-lg space-y-2">
-        <h3 className="text-lg font-semibold mb-3">📊 Ringkasan Tambahan</h3>
-        <ul className="text-sm space-y-1">
-          <li>📥 Jumlah Transaksi Masuk: {rekap.rekap_pemasukan.length}</li>
-          <li>📤 Jumlah Transaksi Keluar: {rekap.rekap_pengeluaran.length}</li>
-          <li>
-            🏅 Kategori Pemasukan Terbesar: {findMax(rekap.rekap_pemasukan)}
-          </li>
-          <li>
-            🚨 Kategori Pengeluaran Terbesar: {findMax(rekap.rekap_pengeluaran)}
-          </li>
-        </ul>
+        {/* Breakdown Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <RekapBox
+            title="Pemasukan per Kategori"
+            data={rekap.rekap_pemasukan}
+            color="green"
+            icon={<FiTrendingUp className="text-green-600" />}
+            loading={loading}
+          />
+          <RekapBox
+            title="Pengeluaran per Kategori"
+            data={rekap.rekap_pengeluaran}
+            color="red"
+            icon={<FiTrendingDown className="text-red-600" />}
+            loading={loading}
+          />
+        </div>
       </div>
     </div>
   );
 }
 
-function StatBox({ title, value, color }) {
-  const bg = {
-    green: "bg-green-100 text-green-900",
-    red: "bg-red-100 text-red-900",
-    blue: "bg-blue-100 text-blue-900",
+// Improved StatBox Component
+function StatBox({ title, value, color, icon }) {
+  const colors = {
+    green: {
+      bg: "bg-green-50",
+      text: "text-green-700",
+      border: "border-green-200",
+    },
+    red: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
+    blue: {
+      bg: "bg-blue-50",
+      text: "text-blue-700",
+      border: "border-blue-200",
+    },
+  };
+
+  const selectedColor = colors[color] || colors.blue;
+
+  return (
+    <div
+      className={`border rounded-xl p-5 ${selectedColor.bg} ${selectedColor.border} transition-all hover:shadow-md`}
+    >
+      <div className="flex justify-between items-start">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className={`text-2xl font-bold mt-1 ${selectedColor.text}`}>
+            Rp {value?.toLocaleString("id-ID") || "0"}
+          </p>
+        </div>
+        <div className={`p-2 rounded-lg ${selectedColor.bg}`}>{icon}</div>
+      </div>
+    </div>
+  );
+}
+
+// RekapBox Component with loading state
+function RekapBox({ title, data, color, icon, loading }) {
+  const badgeColors = {
+    green: "bg-green-100 text-green-800",
+    red: "bg-red-100 text-red-800",
   };
 
   return (
-    <div className={`p-5 rounded-xl border shadow-sm ${bg[color]}`}>
-      <h4 className="text-sm font-medium">{title}</h4>
-      <p className="text-2xl font-bold mt-1">
-        Rp {value?.toLocaleString() || 0}
-      </p>
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="border-b border-gray-200 px-5 py-4 flex items-center gap-2">
+        {icon}
+        <h3 className="font-semibold text-gray-800">{title}</h3>
+      </div>
+
+      <div className="p-5">
+        {loading ? (
+          <div className="animate-pulse space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex justify-between">
+                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+              </div>
+            ))}
+          </div>
+        ) : data.length === 0 ? (
+          <p className="text-gray-500 text-center py-4">Tidak ada data</p>
+        ) : (
+          <ul className="space-y-3">
+            {data.map((item, i) => (
+              <li
+                key={i}
+                className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0"
+              >
+                <span className="font-medium text-gray-700">
+                  {item.kategori || "Lainnya"}
+                </span>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${badgeColors[color]}`}
+                >
+                  Rp {item.total.toLocaleString("id-ID")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
 
-function RekapBox({ title, data, color }) {
-  const badge = {
-    green: "bg-green-200 text-green-900",
-    red: "bg-red-200 text-red-900",
-  };
-
-  return (
-    <div className="bg-white border shadow-sm rounded-xl p-5">
-      <h3 className="text-lg font-semibold mb-4">{title}</h3>
-      <ul className="space-y-2 text-sm">
-        {data.length === 0 && <li className="text-gray-500">Tidak ada data</li>}
-        {data.map((item, i) => (
-          <li key={i} className="flex justify-between items-center">
-            <span className="font-medium">{item.kategori || "Lainnya"}</span>
-            <span
-              className={`px-2 py-0.5 rounded-full text-xs font-semibold ${badge[color]}`}
-            >
-              Rp {item.total.toLocaleString()}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function CombinedBarChart({ pemasukan, pengeluaran }) {
+// CombinedBarChart with loading state
+function CombinedBarChart({ pemasukan, pengeluaran, loading }) {
   const labels = Array.from(
     new Set([...pemasukan, ...pengeluaran].map((i) => i.kategori || "Lainnya"))
   );
+
   const getData = (arr) =>
     labels.map(
       (label) =>
@@ -228,58 +317,124 @@ function CombinedBarChart({ pemasukan, pengeluaran }) {
       {
         label: "Pemasukan",
         data: getData(pemasukan),
-        backgroundColor: "#34d399",
+        backgroundColor: "rgba(52, 211, 153, 0.7)",
+        borderColor: "rgba(52, 211, 153, 1)",
+        borderWidth: 1,
       },
       {
         label: "Pengeluaran",
         data: getData(pengeluaran),
-        backgroundColor: "#f87171",
+        backgroundColor: "rgba(239, 68, 68, 0.7)",
+        borderColor: "rgba(239, 68, 68, 1)",
+        borderWidth: 1,
       },
     ],
   };
+
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md">
-      <h3 className="text-lg font-semibold mb-2">
-        📊 Perbandingan Pemasukan & Pengeluaran
-      </h3>
-      <Bar
-        data={chartData}
-        options={{
-          indexAxis: "y",
-          responsive: true,
-          plugins: { legend: { position: "bottom" } },
-          scales: {
-            x: { beginAtZero: true },
-          },
-        }}
-      />
+    <div className="h-80">
+      {loading ? (
+        <div className="h-full flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <Bar
+          data={chartData}
+          options={{
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+                labels: {
+                  font: {
+                    size: 13,
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                beginAtZero: true,
+                grid: {
+                  color: "rgba(0, 0, 0, 0.05)",
+                },
+              },
+              y: {
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function LineChart({ data }) {
+// LineChart with loading state
+function LineChart({ data, loading }) {
   const labels = data.rekap_pemasukan.map(
     (d, i) => d.kategori || `Kategori ${i + 1}`
   );
+
   const chartData = {
     labels,
     datasets: [
       {
-        label: "Trend Pemasukan",
+        label: "Pemasukan",
         data: data.rekap_pemasukan.map((d) => d.total),
         fill: true,
-        backgroundColor: "rgba(59,130,246,0.2)",
-        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59, 130, 246, 0.1)",
+        borderColor: "rgba(59, 130, 246, 1)",
+        borderWidth: 2,
+        pointBackgroundColor: "#fff",
+        pointBorderWidth: 2,
         tension: 0.3,
       },
     ],
   };
+
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md">
-      <h3 className="text-lg font-semibold mb-2">
-        📈 Trend Pemasukan per Kategori
-      </h3>
-      <Line data={chartData} />
+    <div className="h-80">
+      {loading ? (
+        <div className="h-full flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <Line
+          data={chartData}
+          options={{
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+                labels: {
+                  font: {
+                    size: 13,
+                  },
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: "rgba(0, 0, 0, 0.05)",
+                },
+              },
+              x: {
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          }}
+        />
+      )}
     </div>
   );
 }
