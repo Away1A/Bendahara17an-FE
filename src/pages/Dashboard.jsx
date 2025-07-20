@@ -7,7 +7,7 @@ export default function Dashboard() {
   const [summary, setSummary] = useState({});
   const [pemasukan, setPemasukan] = useState([]);
   const [pengeluaran, setPengeluaran] = useState([]);
-
+  const [saldoTotal, setSaldoTotal] = useState(0);
   const getToday = () => {
     const today = new Date();
     return today.toISOString().split("T")[0];
@@ -19,6 +19,7 @@ export default function Dashboard() {
   const fetchSummary = () => {
     const params = { start_date: startDate, end_date: endDate };
     api.get("/laporan/summary", { params }).then((res) => setSummary(res.data));
+    api.get("/laporan/saldo").then((res) => setSaldoTotal(res.data.saldo));
     api.get("/pemasukan", { params }).then((res) => setPemasukan(res.data));
     api.get("/pengeluaran", { params }).then((res) => setPengeluaran(res.data));
   };
@@ -84,7 +85,7 @@ export default function Dashboard() {
         />
         <CardStat
           title="Saldo Saat Ini"
-          value={Number(summary.saldo || 0).toLocaleString("id-ID")}
+          value={Number(saldoTotal || 0).toLocaleString("id-ID")} // ✅ hanya saldo total
           color="blue"
         />
       </div>

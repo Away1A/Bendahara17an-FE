@@ -42,6 +42,8 @@ export default function LaporanGuest() {
     rekap_pengeluaran: [],
   });
   const [summary, setSummary] = useState({});
+  const [saldoTotal, setSaldoTotal] = useState(0); // ✅ tambahkan state saldo total
+
   const [startDate, setStartDate] = useState(getToday());
   const [endDate, setEndDate] = useState(getToday());
   const [loading, setLoading] = useState(true);
@@ -58,10 +60,12 @@ export default function LaporanGuest() {
     Promise.all([
       api.get("/laporan/rekap", { params }),
       api.get("/laporan/summary", { params }),
+      api.get("/laporan/saldo"), // ✅ ambil saldo total
     ])
-      .then(([rekapRes, summaryRes]) => {
+      .then(([rekapRes, summaryRes, saldoRes]) => {
         setRekap(rekapRes.data);
         setSummary(summaryRes.data);
+        setSaldoTotal(saldoRes.data.saldo); // ✅ simpan saldo total
       })
       .finally(() => setLoading(false));
   };
@@ -159,7 +163,7 @@ export default function LaporanGuest() {
           />
           <StatBox
             title="Saldo Saat Ini"
-            value={summary.saldo}
+            value={saldoTotal} // ✅ gunakan saldoTotal di sini
             color="blue"
             icon={<FiDollarSign className="text-xl" />}
           />
