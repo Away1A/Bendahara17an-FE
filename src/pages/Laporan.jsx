@@ -14,6 +14,7 @@ export default function Laporan() {
   const [summary, setSummary] = useState({});
   const [startDate, setStartDate] = useState(getToday());
   const [endDate, setEndDate] = useState(getToday());
+  const [saldoTotal, setSaldoTotal] = useState(0);
 
   useEffect(() => {
     fetchData();
@@ -22,8 +23,15 @@ export default function Laporan() {
   const fetchData = () => {
     const params = { start_date: startDate, end_date: endDate };
 
-    api.get("/laporan/rekap", { params }).then((res) => setRekap(res.data));
-    api.get("/laporan/summary", { params }).then((res) => setSummary(res.data));
+    Promise.all([
+      api.get("/laporan/rekap", { params }),
+      api.get("/laporan/summary", { params }),
+      api.get("/laporan/saldo"), // ✅ ambil saldo total
+    ]).then(([rekapRes, summaryRes, saldoRes]) => {
+      setRekap(rekapRes.data);
+      setSummary(summaryRes.data);
+      setSaldoTotal(saldoRes.data.saldo); // ✅ simpan ke state
+    });
   };
 
   const downloadExcel = () => {
@@ -87,7 +95,11 @@ export default function Laporan() {
           value={summary.total_pengeluaran}
           color="red"
         />
-        <StatBox title="Saldo Saat Ini" value={summary.saldo} color="blue" />
+        <StatBox
+          title="Saldo Saat Ini"
+          value={saldoTotal} // ✅ gunakan saldo total semua waktu
+          color="blue"
+        />
       </div>
 
       {/* Detail Rekap */}
