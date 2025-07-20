@@ -27,11 +27,11 @@ export default function Laporan() {
   };
 
   const downloadExcel = () => {
-    const url = `https://68dbc27df2a8.ngrok-free.app/api/laporan-pdf/download-excel?start_date=${startDate}&end_date=${endDate}`;
+    const url = `https://b6f5cbf6f3a5.ngrok-free.app/api/laporan-pdf/download-excel?start_date=${startDate}&end_date=${endDate}`;
     window.open(url, "_blank");
   };
   const downloadPdf = () => {
-    const url = `https://68dbc27df2a8.ngrok-free.app/api/laporan-pdf?start_date=${startDate}&end_date=${endDate}`;
+    const url = `https://b6f5cbf6f3a5.ngrok-free.app/api/laporan-pdf?start_date=${startDate}&end_date=${endDate}`;
     window.open(url, "_blank");
   };
 
