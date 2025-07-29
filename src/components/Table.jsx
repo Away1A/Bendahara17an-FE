@@ -21,7 +21,8 @@ export default function Table({ data }) {
   };
 
   const filteredData = useMemo(() => {
-    return data.filter((row) =>
+    const sortedData = [...data];
+    return sortedData.filter((row) =>
       Object.values(row).join(" ").toLowerCase().includes(search.toLowerCase())
     );
   }, [data, search]);

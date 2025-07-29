@@ -17,7 +17,7 @@ export default function Pengeluaran() {
   const [loading, setLoading] = useState(false);
 
   const fetchData = () => {
-    api.get("/pengeluaran").then((res) => setData(res.data));
+    api.get("/pengeluaran/all").then((res) => setData(res.data));
   };
 
   useEffect(() => {
