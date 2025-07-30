@@ -89,8 +89,8 @@ export default function GuestNavbar() {
       {/* Mobile Dropdown */}
       {isOpen && (
         <div className="md:hidden flex flex-col mt-4 gap-2 bg-white/10 rounded-xl p-4 text-sm font-semibold">
-          {navItem("/keuangan", "Keuangan")}
-          {navItem("/acara", "Acara")}
+          {navItem("/laporan/guest", "Keuangan")}
+          {navItem("/acara/guest", "Acara")}
           <button
             onClick={handleLogin}
             className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-3 rounded-lg transition"
