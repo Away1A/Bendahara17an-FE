@@ -91,7 +91,7 @@ export default function AcaraGuest() {
           </h2>
           <div className="aspect-video w-full max-w-3xl mx-auto">
             <iframe
-              src="https://drive.google.com/file/d/19qQVcLk1h76OXu1rvYvzPmRDflM1Q0wg/preview"
+              src="https://drive.google.com/file/d/19qQVcLk1h76OXu1rvYvzPmRDflM1Q0wg/view?usp=sharing"
               width="100%"
               height="480"
               allow="autoplay"
