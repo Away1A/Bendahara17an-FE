@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 
-export default function Table({ data }) {
+export default function TablePendaftaran({ data }) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
@@ -10,15 +10,6 @@ export default function Table({ data }) {
     : [];
 
   const headers = ["No", ...dataKeys];
-
-  const formatDate = (iso) => {
-    if (!iso) return "-";
-    const date = new Date(iso);
-    const d = String(date.getDate()).padStart(2, "0");
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const y = date.getFullYear();
-    return `${d}-${m}-${y}`;
-  };
 
   const filteredData = useMemo(() => {
     const sortedData = [...data];
@@ -35,18 +26,14 @@ export default function Table({ data }) {
 
   const displayHeader = (key) => {
     switch (key) {
-      case "tanggal":
-        return "Tanggal";
-      case "sumber":
-        return "Sumber";
-      case "keperluan":
-        return "Keperluan";
-      case "kategori":
-        return "Kategori";
-      case "jumlah":
-        return "Jumlah (Rp)";
-      case "keterangan":
-        return "Metode Pembayaran";
+      case "nama":
+        return "Nama";
+      case "usia":
+        return "Usia";
+      case "rt":
+        return "RT";
+      case "lomba":
+        return "Lomba";
       default:
         return key.charAt(0).toUpperCase() + key.slice(1);
     }
@@ -55,7 +42,7 @@ export default function Table({ data }) {
   if (!data.length)
     return (
       <div className="mt-6 text-center text-gray-500 italic">
-        Tidak ada data untuk ditampilkan.
+        Tidak ada data pendaftar.
       </div>
     );
 
@@ -64,8 +51,8 @@ export default function Table({ data }) {
       {/* Search */}
       <input
         type="text"
-        placeholder="🔍 Cari data..."
-        className="border border-gray-300 px-4 py-2 rounded-lg w-full md:w-1/2 text-sm focus:ring-2 focus:ring-red-500 transition"
+        placeholder="🔍 Cari nama, lomba, RT..."
+        className="border border-gray-300 px-4 py-2 rounded-lg w-full md:w-1/2 text-sm focus:ring-2 focus:ring-purple-500 transition"
         value={search}
         onChange={(e) => {
           setSearch(e.target.value);
@@ -74,9 +61,9 @@ export default function Table({ data }) {
       />
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border shadow-sm">
+      <div className="overflow-x-auto rounded-xl border shadow-sm">
         <table className="min-w-full text-sm">
-          <thead className="bg-red-600 text-white sticky top-0">
+          <thead className="bg-purple-600 text-white sticky top-0">
             <tr>
               {headers.map((h, idx) => (
                 <th
@@ -99,17 +86,7 @@ export default function Table({ data }) {
                 </td>
                 {dataKeys.map((key, j) => (
                   <td key={j} className="p-3 whitespace-nowrap">
-                    {key === "jumlah"
-                      ? `Rp ${parseInt(row[key] || 0).toLocaleString("id-ID")}`
-                      : key === "keterangan"
-                      ? row[key] === "TUNAI"
-                        ? "Tunai"
-                        : row[key]
-                        ? "Non-Tunai"
-                        : "-"
-                      : key === "tanggal"
-                      ? formatDate(row[key])
-                      : row[key] || "-"}
+                    {row[key] || "-"}
                   </td>
                 ))}
               </tr>

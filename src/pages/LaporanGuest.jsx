@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import GuestNavbar from "../components/NavGuest";
 import api from "../api";
 import {
   Chart as ChartJS,
@@ -47,7 +47,6 @@ export default function LaporanGuest() {
   const [startDate, setStartDate] = useState(getToday());
   const [endDate, setEndDate] = useState(getToday());
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -81,140 +80,136 @@ export default function LaporanGuest() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <FiPieChart className="mr-3 text-blue-600" />
-              Laporan Keuangan
-            </h1>
-            <p className="text-gray-600 mt-1">Forum Remaja RW 09</p>
+    <>
+      <GuestNavbar />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Section */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                <FiPieChart className="mr-3 text-blue-600" />
+                Laporan Keuangan
+              </h1>
+              <p className="text-gray-600 mt-1">Forum Remaja RW 09</p>
+            </div>
           </div>
-          <button
-            onClick={() => navigate("/login")}
-            className="mt-4 sm:mt-0 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg"
-          >
-            <FiLock className="text-lg" />
-            Login Admin
-          </button>
-        </div>
 
-        {/* Filters & Actions */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dari Tanggal
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sampai Tanggal
-              </label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
-            </div>
-            <div className="flex flex-col justify-end">
-              <div className="flex gap-3">
-                <button
-                  onClick={downloadPdf}
-                  className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-md"
-                >
-                  <FiDownload />
-                  PDF
-                </button>
-                <button
-                  onClick={downloadExcel}
-                  className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-md"
-                >
-                  <FiDownload />
-                  Excel
-                </button>
+          {/* Filters & Actions */}
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Dari Tanggal
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Sampai Tanggal
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                />
+              </div>
+              <div className="flex flex-col justify-end">
+                <div className="flex gap-3">
+                  <button
+                    onClick={downloadPdf}
+                    className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-md"
+                  >
+                    <FiDownload />
+                    PDF
+                  </button>
+                  <button
+                    onClick={downloadExcel}
+                    className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-md"
+                  >
+                    <FiDownload />
+                    Excel
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <StatBox
-            title="Total Pemasukan"
-            value={summary.total_pemasukan}
-            color="green"
-            icon={<FiTrendingUp className="text-xl" />}
-          />
-          <StatBox
-            title="Total Pengeluaran"
-            value={summary.total_pengeluaran}
-            color="red"
-            icon={<FiTrendingDown className="text-xl" />}
-          />
-          <StatBox
-            title="Saldo Saat Ini"
-            value={saldoTotal} // ✅ gunakan saldoTotal di sini
-            color="blue"
-            icon={<FiDollarSign className="text-xl" />}
-          />
-        </div>
-
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-5">
-            <div className="flex items-center gap-2 mb-5">
-              <FiBarChart2 className="text-blue-600 text-xl" />
-              <h3 className="text-lg font-semibold text-gray-800">
-                Perbandingan Kategori
-              </h3>
-            </div>
-            <CombinedBarChart
-              pemasukan={rekap.rekap_pemasukan}
-              pengeluaran={rekap.rekap_pengeluaran}
-              loading={loading}
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <StatBox
+              title="Total Pemasukan"
+              value={summary.total_pemasukan}
+              color="green"
+              icon={<FiTrendingUp className="text-xl" />}
+            />
+            <StatBox
+              title="Total Pengeluaran"
+              value={summary.total_pengeluaran}
+              color="red"
+              icon={<FiTrendingDown className="text-xl" />}
+            />
+            <StatBox
+              title="Saldo Saat Ini"
+              value={saldoTotal} // ✅ gunakan saldoTotal di sini
+              color="blue"
+              icon={<FiDollarSign className="text-xl" />}
             />
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-5">
-            <div className="flex items-center gap-2 mb-5">
-              <FiTrendingUp className="text-blue-600 text-xl" />
-              <h3 className="text-lg font-semibold text-gray-800">
-                Trend Pemasukan
-              </h3>
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="bg-white rounded-xl shadow-lg p-5">
+              <div className="flex items-center gap-2 mb-5">
+                <FiBarChart2 className="text-blue-600 text-xl" />
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Perbandingan Kategori
+                </h3>
+              </div>
+              <CombinedBarChart
+                pemasukan={rekap.rekap_pemasukan}
+                pengeluaran={rekap.rekap_pengeluaran}
+                loading={loading}
+              />
             </div>
-            <LineChart data={rekap} loading={loading} />
+
+            <div className="bg-white rounded-xl shadow-lg p-5">
+              <div className="flex items-center gap-2 mb-5">
+                <FiTrendingUp className="text-blue-600 text-xl" />
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Trend Pemasukan
+                </h3>
+              </div>
+              <LineChart data={rekap} loading={loading} />
+            </div>
+          </div>
+
+          {/* Breakdown Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <RekapBox
+              title="Pemasukan per Kategori"
+              data={rekap.rekap_pemasukan}
+              color="green"
+              icon={<FiTrendingUp className="text-green-600" />}
+              loading={loading}
+            />
+            <RekapBox
+              title="Pengeluaran per Kategori"
+              data={rekap.rekap_pengeluaran}
+              color="red"
+              icon={<FiTrendingDown className="text-red-600" />}
+              loading={loading}
+            />
           </div>
         </div>
-
-        {/* Breakdown Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <RekapBox
-            title="Pemasukan per Kategori"
-            data={rekap.rekap_pemasukan}
-            color="green"
-            icon={<FiTrendingUp className="text-green-600" />}
-            loading={loading}
-          />
-          <RekapBox
-            title="Pengeluaran per Kategori"
-            data={rekap.rekap_pengeluaran}
-            color="red"
-            icon={<FiTrendingDown className="text-red-600" />}
-            loading={loading}
-          />
-        </div>
       </div>
-    </div>
+    </>
   );
 }
 

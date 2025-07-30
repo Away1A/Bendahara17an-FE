@@ -18,7 +18,7 @@ export default function Pemasukan() {
   const [loading, setLoading] = useState(false);
 
   const fetchData = () => {
-    api.get("/pemasukan").then((res) => setData(res.data));
+    api.get("/pemasukan/all").then((res) => setData(res.data));
   };
 
   useEffect(() => {
