@@ -8,6 +8,8 @@ import Pemasukan from "./pages/Pemasukan";
 import Pengeluaran from "./pages/Pengeluaran";
 import Laporan from "./pages/Laporan";
 import LaporanGuest from "./pages/LaporanGuest";
+import AcaraGuest from "./pages/AcaraGuest";
+import Pendaftaran from "./pages/Pendaftaran";
 import PengajuanMaker from "./pages/pengajuan/PengajuanMaker";
 import PengajuanChecker from "./pages/pengajuan/PengajuanChecker";
 import PengajuanApprover from "./pages/pengajuan/PengajuanApprover";
@@ -28,6 +30,7 @@ export default function App() {
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/laporan/guest" element={<LaporanGuest />} />
+            <Route path="/acara/guest" element={<AcaraGuest />} />
 
             {/* Route utama diarahkan berdasarkan login */}
             <Route
@@ -55,6 +58,14 @@ export default function App() {
               element={
                 <PrivateRoute>
                   <Pemasukan />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/pendaftaran"
+              element={
+                <PrivateRoute>
+                  <Pendaftaran />
                 </PrivateRoute>
               }
             />
