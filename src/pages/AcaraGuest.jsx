@@ -49,17 +49,20 @@ export default function AcaraGuestModern() {
           </p>
         </section>
 
-        {/* Info Acara */}
-        <section className="bg-white border border-gray-200 shadow-xl rounded-3xl p-10 space-y-10">
-          <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-            <CalendarDays className="w-8 h-8 text-blue-600 bg-blue-100 p-1.5 rounded-lg" />
+        <section className="bg-white border border-gray-100 shadow-xl rounded-3xl px-10 py-14 space-y-14">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center gap-4">
+            <CalendarDays className="w-10 h-10 text-blue-600 bg-blue-100 p-2 rounded-xl shadow-sm" />
             Informasi Acara
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 text-gray-700 text-base leading-relaxed">
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-blue-800">📅 Jadwal Acara</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-gray-700 text-[17px] leading-relaxed">
+            {/* Kiri */}
+            <div className="space-y-10">
+              {/* Jadwal */}
+              <div className="space-y-2">
+                <h3 className="font-semibold text-blue-700 text-lg">
+                  📅 Jadwal Acara
+                </h3>
                 <ul className="list-disc list-inside ml-4 space-y-1">
                   <li>Lomba Porga: 2, 3, 9, 10 Agustus 2025</li>
                   <li>Lomba Senam: 9, 10 Agustus 2025</li>
@@ -70,44 +73,64 @@ export default function AcaraGuestModern() {
                   <li>Malam Puncak: 27 September 2025</li>
                 </ul>
               </div>
+
+              {/* Tema */}
               <div>
-                <h3 className="font-semibold text-blue-800">🎯 Tema Acara</h3>
-                <p>"Flora dan Fauna"</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-blue-800">👨‍👩‍👧‍👦 Peserta</h3>
-                <p>Seluruh Warga Cluster Palem RW.09</p>
+                <h3 className="font-semibold text-blue-700 text-lg">
+                  🎯 Tema Acara
+                </h3>
+                <p className="text-gray-800 mt-1 italic">"Flora dan Fauna"</p>
               </div>
 
-              {/* Rundown Download */}
-              <div className="mt-6">
-                <h3 className="font-semibold text-blue-800 flex items-center gap-2">
-                  <BadgeCheck className="w-5 h-5 text-blue-600" /> Rundown Acara
+              {/* Peserta */}
+              <div>
+                <h3 className="font-semibold text-blue-700 text-lg">
+                  👨‍👩‍👧‍👦 Peserta
                 </h3>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-gray-800 mt-1">
+                  Seluruh Warga Cluster Palem RW.09
+                </p>
+              </div>
+
+              {/* Rundown */}
+              <div className="pt-4 border-t border-gray-200">
+                <h3 className="font-semibold text-blue-700 flex items-center gap-2">
+                  <BadgeCheck className="w-5 h-5 text-blue-600" />
+                  Rundown Acara
+                </h3>
+                <p className="text-sm text-gray-600 mt-1 mb-3">
                   Unduh jadwal resmi seluruh rangkaian kegiatan lomba:
                 </p>
                 <a
                   href="/rundown.xlsx"
                   download
-                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md transition"
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md transition-all"
                 >
                   📥 Download Rundown Excel
                 </a>
               </div>
             </div>
 
-            <div className="space-y-6">
+            {/* Kanan */}
+            <div className="space-y-8">
+              {/* Lokasi */}
               <div>
-                <h3 className="font-semibold text-blue-800">📍 Lokasi Acara</h3>
-                <p>Lapang Palem & Masjid Al-Ukhuwah</p>
+                <h3 className="font-semibold text-blue-700 text-lg">
+                  📍 Lokasi Acara
+                </h3>
+                <p className="text-gray-800 mt-1">
+                  Lapang Palem & Masjid Al-Ukhuwah
+                </p>
               </div>
-              <div className="overflow-hidden rounded-xl border border-blue-100 shadow-md">
+
+              {/* Peta */}
+              <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-lg">
                 <iframe
-                  className="w-full h-64"
+                  className="w-full h-72"
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.3751549660547!2d107.69794897628591!3d-6.964994168198292!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68c2f63bd349dd%3A0xa72c859dcd597db8!2sCluster%20Palem%20Bumi%20Adipura!5e0!3m2!1sen!2sid!4v1753936865431!5m2!1sen!2sid"
                   allowFullScreen
                   loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
                 />
               </div>
             </div>
