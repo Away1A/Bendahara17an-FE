@@ -115,26 +115,41 @@ export default function AcaraGuestModern() {
         </section>
 
         {/* Poster Gallery */}
-        <section className="bg-white p-8 rounded-2xl shadow border border-gray-100">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">
-            🖼️ Galeri Poster
-          </h2>
+        <section className="bg-gradient-to-br from-white to-slate-50 p-8 rounded-3xl shadow-xl border border-gray-100 space-y-6">
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-2">
+            <div className="bg-blue-100 text-blue-600 p-3 rounded-xl text-3xl shadow-sm">
+              🖼️
+            </div>
+            <h2 className="text-3xl font-bold text-gray-800">Galeri Poster</h2>
+          </div>
+
+          {/* Deskripsi */}
+          <p className="text-gray-600 text-lg">
+            Lihat koleksi poster menarik dari berbagai lomba yang telah kami
+            selenggarakan. Klik untuk melihat lebih jelas!
+          </p>
+
+          {/* Swiper Gallery */}
           <Swiper
-            spaceBetween={16}
+            spaceBetween={24}
             slidesPerView={1.2}
             breakpoints={{
               640: { slidesPerView: 1.5 },
               768: { slidesPerView: 2 },
               1024: { slidesPerView: 3 },
             }}
+            className="pt-2"
           >
             {posters.map((src, i) => (
               <SwiperSlide key={i}>
-                <img
-                  src={src}
-                  alt={`Poster ${i + 1}`}
-                  className="h-[350px] object-contain rounded-xl border border-gray-200 shadow-sm"
-                />
+                <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-md hover:shadow-xl transition">
+                  <img
+                    src={src}
+                    alt={`Poster ${i + 1}`}
+                    className="h-[350px] w-full object-contain transform group-hover:scale-[1.02] transition duration-300"
+                  />
+                </div>
               </SwiperSlide>
             ))}
           </Swiper>
