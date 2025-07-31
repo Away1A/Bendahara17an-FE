@@ -4,8 +4,9 @@ import TablePendaftaran from "../components/TablePendaftaran";
 import api from "../api";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import { BadgeCheck, CalendarDays, MapPin, Users } from "lucide-react";
 
-export default function AcaraGuest() {
+export default function AcaraGuestModern() {
   const [pendaftar, setPendaftar] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,32 +37,87 @@ export default function AcaraGuest() {
   return (
     <>
       <GuestNavbar />
-      <main className="px-4 sm:px-6 lg:px-8 py-12 max-w-5xl mx-auto space-y-12">
-        <h1 className="text-4xl font-bold text-center text-gray-800">
-          Informasi Acara & Pendaftaran
-        </h1>
-
-        {/* Section Rundown Acara */}
-        <section className="bg-white shadow rounded-xl p-6">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-700">
-            📋 Rundown Acara
-          </h2>
-          <p className="text-gray-600 mb-3">
-            Silakan unduh file rundown acara dalam format Excel berikut:
+      <main className="max-w-screen-xl mx-auto px-6 py-12 space-y-16 font-sans">
+        {/* Hero */}
+        <section className="text-center space-y-4">
+          <h1 className="text-5xl font-extrabold text-blue-800 drop-shadow-sm">
+            🎉 Agenda Kegiatan RW.09
+          </h1>
+          <p className="text-lg text-gray-600 max-w-xl mx-auto">
+            Jadwal lengkap lomba, lokasi acara, pendaftaran, hingga dokumentasi
+            dan tutorial.
           </p>
-          <a
-            href="/rundown.xlsx"
-            download
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition"
-          >
-            📥 Download Rundown Acara
-          </a>
         </section>
 
-        {/* Section Poster Carousel */}
-        <section className="bg-white shadow rounded-xl p-6">
-          <h2 className="text-2xl font-semibold mb-6 text-gray-700">
-            📢 Poster Acara
+        {/* Info Acara */}
+        <section className="bg-white border border-gray-200 shadow-xl rounded-3xl p-10 space-y-10">
+          <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+            <CalendarDays className="w-8 h-8 text-blue-600 bg-blue-100 p-1.5 rounded-lg" />
+            Informasi Acara
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 text-gray-700 text-base leading-relaxed">
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-blue-800">📅 Jadwal Acara</h3>
+                <ul className="list-disc list-inside ml-4 space-y-1">
+                  <li>Lomba Porga: 2, 3, 9, 10 Agustus 2025</li>
+                  <li>Lomba Senam: 9, 10 Agustus 2025</li>
+                  <li>Lomba Gaple: Mulai 1 Agustus 2025</li>
+                  <li>Lomba Tenis Meja: 9, 10, 16 Agustus 2025</li>
+                  <li>Lomba 17an: 17 Agustus 2025</li>
+                  <li>Lomba Adzan, Kaligrafi & Pengajian: 16 Agustus 2025</li>
+                  <li>Malam Puncak: 27 September 2025</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold text-blue-800">🎯 Tema Acara</h3>
+                <p>"Flora dan Fauna"</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-blue-800">👨‍👩‍👧‍👦 Peserta</h3>
+                <p>Seluruh Warga Cluster Palem RW.09</p>
+              </div>
+
+              {/* Rundown Download */}
+              <div className="mt-6">
+                <h3 className="font-semibold text-blue-800 flex items-center gap-2">
+                  <BadgeCheck className="w-5 h-5 text-blue-600" /> Rundown Acara
+                </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Unduh jadwal resmi seluruh rangkaian kegiatan lomba:
+                </p>
+                <a
+                  href="/rundown.xlsx"
+                  download
+                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md transition"
+                >
+                  📥 Download Rundown Excel
+                </a>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-blue-800">📍 Lokasi Acara</h3>
+                <p>Lapang Palem & Masjid Al-Ukhuwah</p>
+              </div>
+              <div className="overflow-hidden rounded-xl border border-blue-100 shadow-md">
+                <iframe
+                  className="w-full h-64"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.3751549660547!2d107.69794897628591!3d-6.964994168198292!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68c2f63bd349dd%3A0xa72c859dcd597db8!2sCluster%20Palem%20Bumi%20Adipura!5e0!3m2!1sen!2sid!4v1753936865431!5m2!1sen!2sid"
+                  allowFullScreen
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Poster Gallery */}
+        <section className="bg-white p-8 rounded-2xl shadow border border-gray-100">
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">
+            🖼️ Galeri Poster
           </h2>
           <Swiper
             spaceBetween={16}
@@ -72,39 +128,132 @@ export default function AcaraGuest() {
               1024: { slidesPerView: 3 },
             }}
           >
-            {posters.map((src, idx) => (
-              <SwiperSlide key={idx} className="flex justify-center">
+            {posters.map((src, i) => (
+              <SwiperSlide key={i}>
                 <img
                   src={src}
-                  alt={`Poster ${idx + 1}`}
-                  className="h-[420px] object-contain rounded-md shadow-lg"
+                  alt={`Poster ${i + 1}`}
+                  className="h-[350px] object-contain rounded-xl border border-gray-200 shadow-sm"
                 />
               </SwiperSlide>
             ))}
           </Swiper>
         </section>
 
-        {/* Video Tutorial */}
-        <section className="mb-12 bg-white shadow rounded-xl p-6">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-700">
-            Video Tutorial Perlombaan
+        {/* Kategori & Hadiah */}
+        <section className="bg-gradient-to-br from-yellow-50 to-white p-8 rounded-2xl shadow border border-yellow-100 space-y-6">
+          <h2 className="text-3xl font-bold text-yellow-800 flex items-center gap-2">
+            🏆 Kategori & Hadiah
           </h2>
-          <div className="aspect-video w-full max-w-3xl mx-auto">
-            <iframe
-              src="https://drive.google.com/file/d/19qQVcLk1h76OXu1rvYvzPmRDflM1Q0wg/preview"
-              width="100%"
-              height="360"
-              allow="autoplay"
-              allowFullScreen
-              className="rounded shadow w-full h-full"
-            />
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {[
+              "⚽ Futsal Anak",
+              "🎯 Karengrung",
+              "🥤 Sedotan Botol",
+              "🥛 Tiup Gelas",
+              "🎨 Mewarnai Kaligrafi",
+              "🕌 Adzan",
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="bg-white border border-yellow-100 rounded-xl px-4 py-3 text-gray-700 flex items-center gap-3 shadow-sm hover:shadow-md transition"
+              >
+                <span className="text-xl">{item}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-yellow-100 border border-yellow-300 rounded-xl p-4 flex items-center gap-4 mt-4">
+            <span className="text-3xl">🎁</span>
+            <p className="text-yellow-800 font-medium">
+              Hadiah menarik & sertifikat menanti para pemenang di setiap
+              kategori!
+            </p>
           </div>
         </section>
 
-        {/* Section Tabel Pendaftar */}
-        <section className="bg-white shadow rounded-xl p-6">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-700">
-            👥 Daftar Peserta Lomba Anak - anak
+        {/* Video Tutorial */}
+        <section className="bg-gradient-to-br from-white to-red-50 p-8 rounded-3xl shadow-xl border border-red-100 space-y-6">
+          {/* Header */}
+          <div className="flex items-center gap-4">
+            <div className="text-red-500 bg-white border border-red-200 p-3 rounded-2xl shadow-sm text-3xl">
+              🎬
+            </div>
+            <h2 className="text-3xl font-bold text-red-600">Video Tutorial</h2>
+          </div>
+
+          {/* Description */}
+          <p className="text-gray-700 text-lg">
+            Yuk tonton video tutorial berikut sebagai panduan sebelum mengikuti
+            lomba! Jangan lupa tonton sampai selesai ya! 🎥
+          </p>
+
+          {/* Video Box */}
+          <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-red-200 shadow-md hover:shadow-lg transition">
+            <iframe
+              src="https://drive.google.com/file/d/19qQVcLk1h76OXu1rvYvzPmRDflM1Q0wg/preview"
+              allow="autoplay"
+              allowFullScreen
+              className="w-full h-full"
+            />
+            <div className="absolute inset-0 bg-black/10 hover:bg-black/5 transition" />
+          </div>
+
+          {/* Optional CTA */}
+          <div className="mt-4 bg-white border border-red-100 p-4 rounded-xl text-red-700 flex items-center gap-3 shadow-sm">
+            <span className="text-xl">❗</span>
+            <p>
+              Pastikan kamu memahami alur lomba dengan baik setelah menonton
+              videonya.
+            </p>
+          </div>
+        </section>
+
+        {/* Pendaftaran */}
+        <section className="bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow border border-gray-100 space-y-6">
+          <h2 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+            🧾 Pendaftaran Lomba
+          </h2>
+
+          <p className="text-gray-700 text-lg">
+            Untuk mendaftar lomba, silakan hubungi salah satu contact person
+            berikut:
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Azeel */}
+            <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm hover:shadow-md transition flex items-center gap-4">
+              <div className="text-3xl text-green-500">📱</div>
+              <div>
+                <p className="text-lg font-semibold text-gray-800">Azeel</p>
+                <p className="text-gray-600">0821-1807-1057</p>
+              </div>
+            </div>
+
+            {/* Rasya */}
+            <div className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm hover:shadow-md transition flex items-center gap-4">
+              <div className="text-3xl text-green-500">📱</div>
+              <div>
+                <p className="text-lg font-semibold text-gray-800">Rasya</p>
+                <p className="text-gray-600">0877-2294-5599</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 flex items-start gap-3">
+            <span className="text-xl">✅</span>
+            <p>
+              Segera daftarkan diri sebelum kuota peserta penuh! Pendaftaran
+              dibuka hingga <strong>15 Agustus 2025</strong>.
+            </p>
+          </div>
+        </section>
+
+        {/* Tabel Pendaftar */}
+        <section className="bg-white p-8 rounded-2xl shadow border border-gray-100">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            👥 Peserta Terdaftar
           </h2>
           {loading ? (
             <p className="text-gray-500">Memuat data peserta...</p>
