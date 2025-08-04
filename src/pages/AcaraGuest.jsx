@@ -235,7 +235,7 @@ export default function AcaraGuestModern() {
               allowFullScreen
               className="w-full h-full"
             />
-            <div className="absolute inset-0 bg-black/10 hover:bg-black/5 transition" />
+            <div className="absolute inset-0 bg-black/10 hover:bg-black/5 transition pointer-events-none" />
           </div>
 
           {/* Optional CTA */}
