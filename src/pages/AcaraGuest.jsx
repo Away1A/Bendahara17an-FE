@@ -282,8 +282,8 @@ export default function AcaraGuestModern() {
           <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 flex items-start gap-3">
             <span className="text-xl">✅</span>
             <p>
-              Segera daftarkan diri sebelum kuota peserta penuh! Pendaftaran
-              dibuka hingga <strong>15 Agustus 2025</strong>.
+              Segera daftarkan diri! Pendaftaran dibuka hingga{" "}
+              <strong>16 Agustus 2025</strong>.
             </p>
           </div>
         </section>

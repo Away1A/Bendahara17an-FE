@@ -1,123 +1,192 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { Users, Trophy, Home, Loader2 } from "lucide-react";
+import { Menu } from "@headlessui/react";
 
 export default function TablePendaftaran({ data }) {
   const [search, setSearch] = useState("");
+  const [selectedRT, setSelectedRT] = useState("Semua");
+  const [selectedLomba, setSelectedLomba] = useState("Semua");
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const itemsPerPage = 5;
+  const pageSize = 6;
 
-  const dataKeys = data.length
-    ? Object.keys(data[0]).filter((key) => key !== "id")
-    : [];
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 500); // simulate loading
+    return () => clearTimeout(timer);
+  }, [data]);
 
-  const headers = ["No", ...dataKeys];
-
-  const filteredData = useMemo(() => {
-    const sortedData = [...data];
-    return sortedData.filter((row) =>
-      Object.values(row).join(" ").toLowerCase().includes(search.toLowerCase())
-    );
-  }, [data, search]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredData.length / itemsPerPage));
-  const paginatedData = filteredData.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
-  );
-
-  const displayHeader = (key) => {
-    switch (key) {
-      case "nama":
-        return "Nama";
-      case "usia":
-        return "Usia";
-      case "rt":
-        return "RT";
-      case "lomba":
-        return "Lomba";
-      default:
-        return key.charAt(0).toUpperCase() + key.slice(1);
+  const groupByPeserta = (data) => {
+    const map = new Map();
+    for (const row of data) {
+      const key = `${row.nama}|${row.usia}|${row.rt}`;
+      if (!map.has(key)) {
+        map.set(key, { ...row, lomba: [row.lomba] });
+      } else {
+        map.get(key).lomba.push(row.lomba);
+      }
     }
+    return Array.from(map.values());
   };
 
-  if (!data.length)
-    return (
-      <div className="mt-6 text-center text-gray-500 italic">
-        Tidak ada data pendaftar.
-      </div>
-    );
+  const filtered = useMemo(() => {
+    const grouped = groupByPeserta(data);
+
+    return grouped.filter((row) => {
+      if (selectedRT !== "Semua" && row.rt !== selectedRT) return false;
+      if (selectedLomba !== "Semua" && !row.lomba.includes(selectedLomba))
+        return false;
+      return [row.nama, row.usia, row.rt, ...row.lomba]
+        .join(" ")
+        .toLowerCase()
+        .includes(search.toLowerCase());
+    });
+  }, [data, search, selectedRT, selectedLomba]);
+
+  const paginated = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page]);
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+
+  const rtOptions = useMemo(() => {
+    const unique = Array.from(new Set(data.map((d) => d.rt)));
+    return ["Semua", ...unique];
+  }, [data]);
+
+  const lombaOptions = useMemo(() => {
+    const all = new Set();
+    for (const d of data) all.add(d.lomba);
+    return ["Semua", ...Array.from(all)];
+  }, [data]);
 
   return (
-    <div className="space-y-5 mt-6">
-      {/* Search */}
-      <input
-        type="text"
-        placeholder="🔍 Cari nama, lomba, RT..."
-        className="border border-gray-300 px-4 py-2 rounded-lg w-full md:w-1/2 text-sm focus:ring-2 focus:ring-purple-500 transition"
-        value={search}
-        onChange={(e) => {
-          setSearch(e.target.value);
-          setPage(1);
-        }}
-      />
+    <div className="space-y-6 mt-8 prose prose-sm max-w-none">
+      {/* Filter Bar */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <input
+          type="text"
+          placeholder="🔍 Cari nama, RT, lomba..."
+          className="border border-gray-300 px-4 py-2 rounded-lg w-full md:w-1/3 text-sm focus:ring-2 focus:ring-purple-500 transition"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+        />
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl border shadow-sm">
-        <table className="min-w-full text-sm">
-          <thead className="bg-purple-600 text-white sticky top-0">
-            <tr>
-              {headers.map((h, idx) => (
-                <th
-                  key={idx}
-                  className="p-3 text-left whitespace-nowrap font-semibold"
-                >
-                  {idx === 0 ? "No" : displayHeader(h)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedData.map((row, idx) => (
-              <tr
-                key={idx}
-                className="hover:bg-gray-100 transition border-b last:border-b-0"
-              >
-                <td className="p-3 text-center">
-                  {(page - 1) * itemsPerPage + idx + 1}
-                </td>
-                {dataKeys.map((key, j) => (
-                  <td key={j} className="p-3 whitespace-nowrap">
-                    {row[key] || "-"}
-                  </td>
-                ))}
-              </tr>
+        <div className="flex flex-wrap gap-3 text-sm">
+          <select
+            className="border px-3 py-1 rounded-lg"
+            value={selectedRT}
+            onChange={(e) => {
+              setSelectedRT(e.target.value);
+              setPage(1);
+            }}
+          >
+            {rtOptions.map((rt) => (
+              <option key={rt} value={rt}>
+                {rt === "Semua" ? "Semua RT" : `RT ${rt}`}
+              </option>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </select>
 
-      {/* Pagination */}
-      <div className="flex flex-col md:flex-row md:justify-between items-center gap-3 text-sm text-gray-600">
-        <span>
-          Menampilkan {paginatedData.length} dari {filteredData.length} data
-          (halaman {page} dari {totalPages})
-        </span>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            disabled={page === 1}
-            className="px-4 py-1.5 rounded border bg-white hover:bg-gray-50 disabled:opacity-40"
+          <select
+            className="border px-3 py-1 rounded-lg"
+            value={selectedLomba}
+            onChange={(e) => {
+              setSelectedLomba(e.target.value);
+              setPage(1);
+            }}
           >
-            &larr; Sebelumnya
-          </button>
-          <button
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-            disabled={page === totalPages}
-            className="px-4 py-1.5 rounded border bg-white hover:bg-gray-50 disabled:opacity-40"
-          >
-            Selanjutnya &rarr;
-          </button>
+            {lombaOptions.map((lomba) => (
+              <option key={lomba} value={lomba}>
+                {lomba === "Semua" ? "Semua Lomba" : lomba}
+              </option>
+            ))}
+          </select>
+
+          <span className="flex items-center gap-1 text-gray-600">
+            <Users className="w-4 h-4" />
+            {filtered.length} Peserta
+          </span>
         </div>
       </div>
+
+      {/* Loading */}
+      {loading ? (
+        <div className="text-center text-gray-500 py-10">
+          <Loader2 className="animate-spin inline-block w-6 h-6 mr-2" />
+          Memuat data peserta...
+        </div>
+      ) : !filtered.length ? (
+        <div className="text-center text-gray-500 italic">
+          Tidak ada data pendaftar.
+        </div>
+      ) : (
+        <>
+          {/* Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+            {paginated.map((row, idx) => (
+              <div
+                key={idx}
+                className="bg-white border border-gray-200 rounded-2xl p-5 shadow hover:shadow-md transition space-y-3"
+              >
+                <div className="text-lg font-semibold text-purple-700">
+                  👤 {row.nama}
+                </div>
+                <div className="text-sm text-gray-700 flex items-center gap-2">
+                  🎂 Usia: <span className="font-medium">{row.usia}</span>
+                </div>
+                <div className="text-sm text-gray-700 flex items-center gap-2">
+                  <Home className="w-4 h-4" />
+                  RT {row.rt}
+                </div>
+
+                <div className="pt-2">
+                  <div className="text-sm text-gray-600 mb-1">
+                    Lomba Diikuti:
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {row.lomba.map((l, i) => (
+                      <span
+                        key={i}
+                        className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"
+                      >
+                        <Trophy className="w-3 h-3" />
+                        {l}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="text-xs text-gray-500 pt-2">
+                  Total: {row.lomba.length} lomba
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2 pt-4">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i}
+                  className={`px-3 py-1 rounded-lg text-sm border ${
+                    page === i + 1
+                      ? "bg-purple-600 text-white"
+                      : "bg-white text-gray-700"
+                  }`}
+                  onClick={() => setPage(i + 1)}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
