@@ -26,22 +26,57 @@ const blurPlaceholder =
     `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='20' viewBox='0 0 32 20'><rect width='32' height='20' fill='#f3f4f6'/></svg>`
   );
 
-/* ---------------- ImageItem (frame + lazy load + subtle zoom) ---------------- */
+/* ---------------- helpers for responsive urls ---------------- */
+function isMobileDevice() {
+  if (typeof navigator === "undefined") return false;
+  return /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(
+    navigator.userAgent
+  );
+}
+
+/**
+ * Build responsive URLs for several widths and for webp fallback.
+ * This function appends query params to a resolved image URL (using getImageUrl).
+ * If your backend/CDN supports resizing/format parameters (eg: ?w=800&fmt=webp),
+ * browser will fetch accordingly. If not supported, the server should ignore params.
+ */
+function buildResponsiveUrl(originalUrl, width, fmt = "") {
+  if (!originalUrl) return originalUrl;
+  const base = getImageUrl(originalUrl);
+  const sep = base.includes("?") ? "&" : "?";
+  if (fmt) return `${base}${sep}w=${width}&fmt=${fmt}`;
+  return `${base}${sep}w=${width}`;
+}
+
+/* ---------------- ImageItem (responsive, mobile-friendly, retry) ---------------- */
 const ImageItem = memo(function ImageItem({
   originalUrl,
   index,
   caption,
   onOpen,
+  width = 400,
+  height = 300,
 }) {
   const imgRef = useRef();
   const [isVisible, setIsVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [failedOnce, setFailedOnce] = useState(false);
 
-  const imageUrl = useMemo(() => getImageUrl(originalUrl), [originalUrl]);
+  const imageUrl = useMemo(() => originalUrl || "", [originalUrl]);
 
   useEffect(() => {
+    // If mobile, load immediately (some mobiles fail to trigger observer reliably)
+    if (isMobileDevice()) {
+      setIsVisible(true);
+      return;
+    }
+
     const el = imgRef.current;
-    if (!el) return;
+    if (!el) {
+      setIsVisible(true);
+      return;
+    }
+
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -51,18 +86,46 @@ const ImageItem = memo(function ImageItem({
           }
         });
       },
-      { rootMargin: "240px", threshold: 0.01 }
+      // larger rootMargin so images start loading earlier on slow networks
+      { rootMargin: "800px", threshold: 0.01 }
     );
     obs.observe(el);
     return () => obs && obs.disconnect();
   }, []);
 
+  // responsive srcsets (uses buildResponsiveUrl which resolves through getImageUrl)
+  const src480 = buildResponsiveUrl(imageUrl, 480);
+  const src768 = buildResponsiveUrl(imageUrl, 768);
+  const src1200 = buildResponsiveUrl(imageUrl, 1200);
+  const src2000 = buildResponsiveUrl(imageUrl, 2000);
+
+  // webp variants
+  const webp480 = buildResponsiveUrl(imageUrl, 480, "webp");
+  const webp768 = buildResponsiveUrl(imageUrl, 768, "webp");
+  const webp1200 = buildResponsiveUrl(imageUrl, 1200, "webp");
+
+  function handleError(e) {
+    // first failure: try switching to a low-res or webp (if not tried)
+    if (!failedOnce) {
+      setFailedOnce(true);
+      // try to replace src with a lower-res (480) or webp
+      e.currentTarget.src = src480 || webp480 || placeholderDataUrl;
+      return;
+    }
+
+    // second failure: final fallback
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = placeholderDataUrl;
+    setLoaded(true);
+  }
+
   return (
     <figure
       ref={imgRef}
       className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-white/60 to-slate-50 border border-slate-100 shadow-sm transform-gpu hover:scale-[1.03] transition-transform duration-300"
-      style={{ aspectRatio: "4 / 3" }}
+      style={{ aspectRatio: `${width} / ${height}`, minHeight: 120 }}
     >
+      {/* Blur placeholder behind image */}
       <div
         className={`absolute inset-0 z-0 transition-opacity duration-300 ${
           loaded ? "opacity-0" : "opacity-100"
@@ -77,25 +140,44 @@ const ImageItem = memo(function ImageItem({
         />
       </div>
 
-      <img
-        src={isVisible ? imageUrl : blurPlaceholder}
-        alt={caption || `Foto ${index + 1}`}
-        className={`relative z-10 w-full h-full object-cover block transition-transform duration-500 ease-[cubic-bezier(.2,.9,.3,1)] ${
-          loaded ? "scale-100 opacity-100" : "scale-105 opacity-0"
-        }`}
-        loading="lazy"
-        decoding="async"
-        onLoad={() => setLoaded(true)}
-        onError={(e) => {
-          e.currentTarget.onerror = null;
-          e.currentTarget.src = placeholderDataUrl;
-          setLoaded(true);
-        }}
-        onClick={() => onOpen(index)}
-        style={{ cursor: "zoom-in" }}
-        role="button"
-        aria-label={`Buka foto ${index + 1}`}
-      />
+      {isVisible ? (
+        <picture>
+          {/* prefer webp if backend supports generating webp */}
+          <source
+            type="image/webp"
+            srcSet={`${webp480} 480w, ${webp768} 768w, ${webp1200} 1200w`}
+            sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
+          />
+          {/* fallback types / original format */}
+          <source
+            srcSet={`${src480} 480w, ${src768} 768w, ${src1200} 1200w, ${src2000} 2000w`}
+            sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
+          />
+          <img
+            src={src768 || getImageUrl(imageUrl)}
+            alt={caption || `Foto ${index + 1}`}
+            className={`relative z-10 w-full h-full object-cover block transition-transform duration-500 ease-[cubic-bezier(.2,.9,.3,1)] ${
+              loaded ? "scale-100 opacity-100" : "scale-105 opacity-0"
+            }`}
+            loading="lazy"
+            decoding="async"
+            onLoad={() => setLoaded(true)}
+            onError={handleError}
+            onClick={() => onOpen(index)}
+            style={{ cursor: "zoom-in" }}
+            draggable={false}
+            role="button"
+            aria-label={`Buka foto ${index + 1}`}
+          />
+        </picture>
+      ) : (
+        <img
+          src={blurPlaceholder}
+          alt={`placeholder ${index + 1}`}
+          className="relative z-10 w-full h-full object-cover block"
+          draggable={false}
+        />
+      )}
 
       {/* decorative frame */}
       <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/60 mix-blend-normal" />
