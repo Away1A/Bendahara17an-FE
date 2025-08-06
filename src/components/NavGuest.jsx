@@ -57,6 +57,7 @@ export default function GuestNavbar() {
         <div className="hidden md:flex items-center gap-6 text-sm font-semibold">
           {navItem("/laporan/guest", "Keuangan")}
           {navItem("/acara/guest", "Acara")}
+          {navItem("/dokumentasi/guest", "Dokumentasi")}
 
           {/* Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
@@ -91,6 +92,7 @@ export default function GuestNavbar() {
         <div className="md:hidden flex flex-col mt-4 gap-2 bg-white/10 rounded-xl p-4 text-sm font-semibold">
           {navItem("/laporan/guest", "Keuangan")}
           {navItem("/acara/guest", "Acara")}
+          {navItem("/dokumentasi/guest", "Dokumentasi")}
           <button
             onClick={handleLogin}
             className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-3 rounded-lg transition"

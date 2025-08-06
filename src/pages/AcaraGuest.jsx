@@ -228,7 +228,7 @@ export default function AcaraGuestModern() {
           </p>
 
           {/* Video Box */}
-          <div className="relative aspect-video rounded-2xl overflow-hidden border-2 border-red-200 shadow-md hover:shadow-lg transition">
+          <div className="relative w-full h-[50vh] md:h-[70vh] rounded-2xl overflow-hidden border-4 border-red-300 shadow-xl hover:shadow-2xl transition">
             <iframe
               src="https://drive.google.com/file/d/19qQVcLk1h76OXu1rvYvzPmRDflM1Q0wg/preview"
               allow="autoplay"
