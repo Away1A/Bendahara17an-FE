@@ -403,7 +403,7 @@ function Lightbox({ photos, startIndex, onClose }) {
             </div>
             <div className="mt-3">
               <a
-                href={getImageUrl(photo.fullLink || photo.thumbnailLink)}
+                href={getImageUrl(photo.full || photo.thumbnailLink)}
                 target="_blank"
                 rel="noreferrer"
                 className="underline text-white/90"
@@ -430,7 +430,7 @@ function Lightbox({ photos, startIndex, onClose }) {
               // fallback if something unexpected happens at render time
               // try small size or show error
               setDisplaySrc(
-                buildResponsiveUrl(photo.fullLink || photo.thumbnailLink, 480)
+                buildResponsiveUrl(photo.full || photo.thumbnailLink, 480)
               );
             }}
           />
@@ -477,15 +477,6 @@ function Lightbox({ photos, startIndex, onClose }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <a
-              href={getImageUrl(photo.fullLink || photo.thumbnailLink)}
-              target="_blank"
-              rel="noreferrer"
-              download
-              className="inline-block bg-white text-sm px-3 py-2 rounded-lg shadow hover:scale-105 transition"
-            >
-              Download
-            </a>
             <div className="text-sm text-white/80">
               {index + 1} / {photos.length}
             </div>
