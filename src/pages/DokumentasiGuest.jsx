@@ -245,40 +245,138 @@ const ImageItem = memo(function ImageItem({
 });
 
 /* ---------------- Lightbox modal ---------------- */
+/* Lightbox (improved safe loader) */
 function Lightbox({ photos, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex || 0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [displaySrc, setDisplaySrc] = useState(null);
+  const activeRef = useRef({ cancelled: false });
 
-  useEffect(() => setIndex(startIndex || 0), [startIndex, photos]);
+  useEffect(() => {
+    setIndex(startIndex || 0);
+  }, [startIndex, photos]);
 
-  const prev = useCallback(
-    (e) => {
-      e?.stopPropagation();
-      setIndex((i) => (i - 1 + photos.length) % photos.length);
-    },
-    [photos.length]
-  );
-  const next = useCallback(
-    (e) => {
-      e?.stopPropagation();
-      setIndex((i) => (i + 1) % photos.length);
-    },
-    [photos.length]
-  );
+  useEffect(() => {
+    activeRef.current.cancelled = false;
+    setError(false);
+    setLoading(true);
+    setDisplaySrc(null);
+
+    if (!photos || photos.length === 0) {
+      setLoading(false);
+      return;
+    }
+
+    const photo = photos[index];
+
+    // Build a prioritized list of URLs to try (highest quality first)
+    const resolvedMain = getImageUrl(
+      photo.fullLink || photo.thumbnailLink || ""
+    );
+    const src1200 = buildResponsiveUrl(
+      photo.fullLink || photo.thumbnailLink,
+      1200
+    );
+    const src768 = buildResponsiveUrl(
+      photo.fullLink || photo.thumbnailLink,
+      768
+    );
+    const src480 = buildResponsiveUrl(
+      photo.fullLink || photo.thumbnailLink,
+      480
+    );
+
+    const candidates = Array.from(
+      new Set([resolvedMain, src1200, src768, src480])
+    ).filter(Boolean);
+
+    // Safety thresholds
+    const MAX_DIM = 8000; // max allowed width or height (tweakable)
+    // try to load candidate sequentially
+    (async () => {
+      for (let i = 0; i < candidates.length; i++) {
+        if (activeRef.current.cancelled) return;
+        const url = candidates[i];
+        try {
+          // Preload using JS Image
+          const img = new Image();
+          // If your server requires CORS, uncomment next line and ensure server allows origin
+          // img.crossOrigin = "anonymous";
+          img.src = url;
+
+          // wait for load or error
+          await new Promise((resolve, reject) => {
+            const to = setTimeout(() => {
+              // timeout (avoid waiting forever)
+              reject(new Error("timeout"));
+            }, 8000);
+
+            img.onload = () => {
+              clearTimeout(to);
+              resolve();
+            };
+            img.onerror = (ev) => {
+              clearTimeout(to);
+              reject(new Error("error loading"));
+            };
+          });
+
+          // If browser supports decode, await it (extra safety)
+          if (img.decode) {
+            try {
+              await img.decode();
+            } catch (decErr) {
+              // decode failed -> try next candidate
+              continue;
+            }
+          }
+
+          // check natural size to avoid extremely large images
+          const w = img.naturalWidth || 0;
+          const h = img.naturalHeight || 0;
+          if (w > MAX_DIM || h > MAX_DIM) {
+            // image likely enormous — skip to next (fallback to smaller)
+            continue;
+          }
+
+          // success: set as display source and exit loop
+          setDisplaySrc(url);
+          setLoading(false);
+          setError(false);
+          return;
+        } catch (e) {
+          // try next candidate
+          // console.warn("lightbox preload fail", url, e);
+          continue;
+        }
+      }
+
+      // if all candidates exhausted
+      setLoading(false);
+      setError(true);
+    })();
+
+    return () => {
+      activeRef.current.cancelled = true;
+    };
+  }, [index, photos]);
 
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") prev();
-      if (e.key === "ArrowRight") next();
+      if (e.key === "ArrowLeft")
+        setIndex((i) => (i - 1 + photos.length) % photos.length);
+      if (e.key === "ArrowRight") setIndex((i) => (i + 1) % photos.length);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, prev, next]);
+  }, [onClose, photos.length]);
 
   if (!photos || photos.length === 0) return null;
 
   const photo = photos[index];
-  const url = getImageUrl(photo.fullLink || photo.thumbnailLink);
+  const safeAlt = photo.caption || photo.title || `Foto ${index + 1}`;
 
   return (
     <div
@@ -286,15 +384,57 @@ function Lightbox({ photos, startIndex, onClose }) {
       onClick={onClose}
     >
       <div
-        className="max-w-[1200px] w-full max-h-[92vh] bg-transparent relative"
+        className="max-w-[1200px] w-full max-h-[92vh] bg-transparent relative flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <img
-          src={url}
-          alt={photo.caption || `Foto ${index + 1}`}
-          className="w-full h-[70vh] sm:h-[80vh] object-contain rounded-xl shadow-2xl bg-white"
-          draggable={false}
-        />
+        {loading && (
+          <div className="text-white flex flex-col items-center gap-3">
+            <div className="loader" aria-hidden />{" "}
+            {/* you can style .loader via CSS */}
+            <div>Memuat gambar...</div>
+          </div>
+        )}
+
+        {error && !loading && (
+          <div className="text-white text-center">
+            <div className="font-semibold mb-2">Gagal memuat gambar</div>
+            <div className="text-sm text-white/80">
+              Coba unduh atau buka lewat link.
+            </div>
+            <div className="mt-3">
+              <a
+                href={getImageUrl(photo.fullLink || photo.thumbnailLink)}
+                target="_blank"
+                rel="noreferrer"
+                className="underline text-white/90"
+              >
+                Buka gambar di tab baru
+              </a>
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && displaySrc && (
+          <img
+            src={displaySrc}
+            alt={safeAlt}
+            className="rounded-xl shadow-2xl bg-white object-contain"
+            style={{
+              maxHeight: "80vh",
+              maxWidth: "100%",
+              width: "auto",
+              height: "auto",
+            }}
+            draggable={false}
+            onError={(e) => {
+              // fallback if something unexpected happens at render time
+              // try small size or show error
+              setDisplaySrc(
+                buildResponsiveUrl(photo.fullLink || photo.thumbnailLink, 480)
+              );
+            }}
+          />
+        )}
 
         <button
           onClick={onClose}
@@ -306,7 +446,10 @@ function Lightbox({ photos, startIndex, onClose }) {
 
         <div className="absolute left-4 top-1/2 -translate-y-1/2">
           <button
-            onClick={prev}
+            onClick={(e) => {
+              e?.stopPropagation();
+              setIndex((i) => (i - 1 + photos.length) % photos.length);
+            }}
             className="bg-white/90 hover:bg-white p-2 rounded-full shadow"
             aria-label="Sebelumnya"
           >
@@ -315,7 +458,10 @@ function Lightbox({ photos, startIndex, onClose }) {
         </div>
         <div className="absolute right-4 top-1/2 -translate-y-1/2">
           <button
-            onClick={next}
+            onClick={(e) => {
+              e?.stopPropagation();
+              setIndex((i) => (i + 1) % photos.length);
+            }}
             className="bg-white/90 hover:bg-white p-2 rounded-full shadow"
             aria-label="Selanjutnya"
           >
@@ -323,7 +469,7 @@ function Lightbox({ photos, startIndex, onClose }) {
           </button>
         </div>
 
-        <div className="mt-3 flex items-center justify-between px-1">
+        <div className="mt-3 flex items-center justify-between px-1 absolute bottom-3 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)]">
           <div className="text-white text-sm">
             <div className="font-semibold">{photo.title || photo.caption}</div>
             <div className="text-slate-200 text-xs">
@@ -332,7 +478,7 @@ function Lightbox({ photos, startIndex, onClose }) {
           </div>
           <div className="flex items-center gap-2">
             <a
-              href={url}
+              href={getImageUrl(photo.fullLink || photo.thumbnailLink)}
               target="_blank"
               rel="noreferrer"
               download
@@ -358,7 +504,16 @@ export default function DokumentasiGuest() {
 
   const [selectedYear, setSelectedYear] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [visibleCount, setVisibleCount] = useState(24);
+
+  // detect mobile
+  const mobile =
+    typeof navigator !== "undefined" &&
+    /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(
+      navigator.userAgent
+    );
+
+  // smaller initial batch on mobile
+  const [visibleCount, setVisibleCount] = useState(mobile ? 12 : 24);
 
   const [loadingYears, setLoadingYears] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(false);
@@ -374,7 +529,7 @@ export default function DokumentasiGuest() {
         const res = await api.get("/foto/years");
         const data = res.data;
         setYears(data);
-        if (data.length > 0) setSelectedYear(data[0]);
+        if (data && data.length > 0) setSelectedYear(data[0]);
       } catch (err) {
         console.error("Gagal mengambil tahun:", err);
       } finally {
@@ -394,7 +549,7 @@ export default function DokumentasiGuest() {
         });
         const data = res.data;
         setCategories(data);
-        setSelectedCategory(data[0] || null);
+        setSelectedCategory(data && data.length > 0 ? data[0] : null);
       } catch (err) {
         console.error("Gagal mengambil kategori:", err);
       } finally {
@@ -412,10 +567,12 @@ export default function DokumentasiGuest() {
         const res = await api.get(`/foto/photos`, {
           params: { year: selectedYear, category: selectedCategory },
         });
-        const mapped = res.data.map((p) => ({
+        const mapped = (res.data || []).map((p) => ({
           id: p.id,
-          thumbnailLink: p.thumbnailLink || p.fileId || p.url,
-          fullLink: p.fullLink || p.originalUrl || p.thumbnailLink,
+          // thumbnail for grid; fullLink for lightbox/download
+          thumbnailLink: p.thumbnailLink || p.fileId || p.url || "",
+          fullLink:
+            p.fullLink || p.originalUrl || p.url || p.thumbnailLink || "",
           title: p.title || p.name || "",
           caption:
             p.caption || p.description || `${selectedCategory} ${selectedYear}`,
@@ -423,6 +580,8 @@ export default function DokumentasiGuest() {
           year: selectedYear,
         }));
         setPhotos(mapped);
+        // reset visibleCount when category changes (mobile-aware)
+        setVisibleCount(mobile ? 12 : 24);
       } catch (err) {
         console.error("Gagal mengambil foto:", err);
       } finally {
@@ -430,14 +589,20 @@ export default function DokumentasiGuest() {
       }
     };
     fetchPhotos();
-  }, [selectedYear, selectedCategory]);
+  }, [selectedYear, selectedCategory, mobile]);
 
-  useEffect(() => setVisibleCount(24), [selectedCategory]);
-
+  // keep visibleCount reset on category change (already handled above via setVisibleCount when photos loaded)
+  // compute visible slice
   const visiblePhotos = useMemo(
     () => photos.slice(0, visibleCount),
     [photos, visibleCount]
   );
+
+  // safe compute absolute index (fallback to slice idx)
+  function computeAbsoluteIndex(photoSlice, idxSlice) {
+    const absoluteIndex = photos.findIndex((p) => p.id === photoSlice.id);
+    return absoluteIndex >= 0 ? absoluteIndex : idxSlice;
+  }
 
   const openLightboxAt = (absoluteIndex) => {
     if (absoluteIndex < 0 || absoluteIndex >= photos.length) return;
@@ -604,17 +769,21 @@ export default function DokumentasiGuest() {
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                 {visiblePhotos.map((photoSlice, idxSlice) => {
-                  // compute absolute index in photos array
-                  const absoluteIndex = photos.findIndex(
-                    (p) => p.id === photoSlice.id
+                  const absoluteIndex = computeAbsoluteIndex(
+                    photoSlice,
+                    idxSlice
                   );
                   return (
                     <div key={photoSlice.id || idxSlice}>
                       <ImageItem
                         originalUrl={photoSlice.thumbnailLink}
+                        fullLink={photoSlice.fullLink}
                         index={absoluteIndex}
                         caption={photoSlice.title || photoSlice.caption}
-                        onOpen={(i) => openLightboxAt(absoluteIndex)}
+                        onOpen={() => openLightboxAt(absoluteIndex)}
+                        width={mobile ? 260 : 400}
+                        height={mobile ? 180 : 300}
+                        disableWebp={mobile}
                       />
                     </div>
                   );
@@ -624,7 +793,9 @@ export default function DokumentasiGuest() {
               {photos.length > visibleCount && (
                 <div className="text-center mt-8">
                   <button
-                    onClick={() => setVisibleCount((p) => p + 24)}
+                    onClick={() =>
+                      setVisibleCount((p) => p + (mobile ? 12 : 24))
+                    }
                     className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-emerald-500 text-white shadow-lg hover:scale-105 transition"
                   >
                     Tampilkan Lebih Banyak
