@@ -49,71 +49,26 @@ function buildResponsiveUrl(originalUrl, width, fmt = "") {
 }
 
 /* ---------------- ImageItem (responsive, mobile-friendly, retry) ---------------- */
-/**
- * ImageItem (safe)
- *
- * Props:
- * - originalUrl: string (thumbnail / small)
- * - fullLink: string (full image, optional)
- * - index: number (absolute index)
- * - caption: string
- * - onOpen: function(index)
- * - width, height: numbers (for aspect ratio)
- * - disableWebp: boolean (if true, do not offer webp sources)
- * - forceFmt: string|null (e.g. "jpeg" to force fmt param in URLs)
- */
 const ImageItem = memo(function ImageItem({
   originalUrl,
-  fullLink,
   index,
   caption,
   onOpen,
   width = 400,
   height = 300,
-  disableWebp = false,
-  forceFmt = "",
+  fullLink,
 }) {
-  const imgRef = useRef(null);
+  const imgRef = useRef();
   const [isVisible, setIsVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [currentSrc, setCurrentSrc] = useState("");
   const [fallbackStage, setFallbackStage] = useState(0);
   const [useBackground, setUseBackground] = useState(false);
 
-  // ---------------- helper wrappers (assumes you have getImageUrl/buildResponsiveUrl)
-  // If not present, implement minimal stubs here or import from your utils.
-  // getImageUrl: resolve fileId or path to full absolute url
-  // buildResponsiveUrl: append ?w=...&fmt=... to getImageUrl result
-  if (typeof getImageUrl === "undefined") {
-    // minimal fallback (you should replace with your existing function)
-    // eslint-disable-next-line no-unused-vars
-    var getImageUrl = (u) => u || "";
-  }
-  if (typeof buildResponsiveUrl === "undefined") {
-    // eslint-disable-next-line no-unused-vars
-    var buildResponsiveUrl = (u, w, f = "") => {
-      if (!u) return "";
-      const base = getImageUrl(u);
-      const sep = base.includes("?") ? "&" : "?";
-      if (f) return `${base}${sep}w=${w}&fmt=${f}`;
-      return `${base}${sep}w=${w}`;
-    };
-  }
+  const imageUrl = useMemo(() => originalUrl || "", [originalUrl]);
 
-  // Ensure we have an image URL to try
-  const imageUrl = useMemo(
-    () => originalUrl || fullLink || "",
-    [originalUrl, fullLink]
-  );
-
-  // IntersectionObserver for lazy-load
   useEffect(() => {
-    if (
-      typeof navigator !== "undefined" &&
-      /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(
-        navigator.userAgent
-      )
-    ) {
+    if (isMobileDevice()) {
       setIsVisible(true);
       return;
     }
@@ -137,24 +92,15 @@ const ImageItem = memo(function ImageItem({
     return () => obs && obs.disconnect();
   }, []);
 
-  // Build URLs with optional forcing format and webp toggle
-  const fmtForGrid = forceFmt || ""; // e.g. "jpeg" on mobile if provided
-  const src480 = buildResponsiveUrl(imageUrl, 480, fmtForGrid);
-  const src768 = buildResponsiveUrl(imageUrl, 768, fmtForGrid);
-  const src1200 = buildResponsiveUrl(imageUrl, 1200, fmtForGrid);
-  const src2000 = buildResponsiveUrl(imageUrl, 2000, fmtForGrid);
+  const src768 = buildResponsiveUrl(imageUrl, 768);
+  const src480 = buildResponsiveUrl(imageUrl, 480);
+  const src1200 = buildResponsiveUrl(imageUrl, 1200);
+  const src2000 = buildResponsiveUrl(imageUrl, 2000);
 
-  const webp480 = !disableWebp
-    ? buildResponsiveUrl(imageUrl, 480, "webp")
-    : null;
-  const webp768 = !disableWebp
-    ? buildResponsiveUrl(imageUrl, 768, "webp")
-    : null;
-  const webp1200 = !disableWebp
-    ? buildResponsiveUrl(imageUrl, 1200, "webp")
-    : null;
+  const webp480 = buildResponsiveUrl(imageUrl, 480, "webp");
+  const webp768 = buildResponsiveUrl(imageUrl, 768, "webp");
+  const webp1200 = buildResponsiveUrl(imageUrl, 1200, "webp");
 
-  // Ordered fallback list (unique)
   const fallbackList = useMemo(() => {
     const list = [];
     if (src768) list.push(src768);
@@ -162,15 +108,10 @@ const ImageItem = memo(function ImageItem({
     const resolved = getImageUrl(imageUrl) || "";
     if (resolved) list.push(resolved);
     if (fullLink) list.push(getImageUrl(fullLink));
-    // final fallback transparent placeholder (small)
-    const placeholderDataUrl =
-      "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
     list.push(placeholderDataUrl);
-    // unique
     return Array.from(new Set(list)).filter(Boolean);
   }, [src768, src480, imageUrl, fullLink]);
 
-  // Initialize currentSrc when visible
   useEffect(() => {
     if (!isVisible) return;
     if (!currentSrc && fallbackList.length > 0) {
@@ -179,8 +120,7 @@ const ImageItem = memo(function ImageItem({
     }
   }, [isVisible, fallbackList, currentSrc]);
 
-  // Try next fallback on failure
-  const tryNextFallback = useCallback(() => {
+  function tryNextFallback() {
     setFallbackStage((s) => {
       const next = s + 1;
       if (next >= fallbackList.length) {
@@ -190,11 +130,11 @@ const ImageItem = memo(function ImageItem({
       setCurrentSrc(fallbackList[next]);
       return next;
     });
-  }, [fallbackList]);
+  }
 
   function handleImgError(e) {
-    // log minimal for debugging (remove in prod if noisy)
-    // console.warn("Image load error:", e?.currentTarget?.src);
+    // optional debugging:
+    // console.warn('Image error:', e?.currentTarget?.src);
     tryNextFallback();
   }
 
@@ -208,8 +148,8 @@ const ImageItem = memo(function ImageItem({
     if (useBackground) setUseBackground(false);
   }
 
-  // Background candidate in case of total failure (prefer fullLink)
-  const bgCandidate = getImageUrl(fullLink || imageUrl) || "";
+  // background fallback: prefer fullLink (if available), else resolved original, else blur
+  const bgCandidate = getImageUrl(fullLink || imageUrl) || blurPlaceholder;
   const backgroundStyle = useBackground
     ? {
         backgroundImage: `url('${bgCandidate}')`,
@@ -218,7 +158,7 @@ const ImageItem = memo(function ImageItem({
       }
     : undefined;
 
-  // Always make figure interactive so lightbox can open even if img failed
+  // Make whole figure interactive — click opens lightbox in all modes
   const handleOpen = (e) => {
     e?.stopPropagation();
     if (typeof onOpen === "function") onOpen(index);
@@ -241,7 +181,6 @@ const ImageItem = memo(function ImageItem({
       role="button"
       aria-label={`Buka foto ${index + 1}`}
     >
-      {/* blur placeholder behind image */}
       <div
         className={`absolute inset-0 z-0 transition-opacity duration-300 ${
           loaded ? "opacity-0" : "opacity-100"
@@ -249,12 +188,7 @@ const ImageItem = memo(function ImageItem({
         aria-hidden
       >
         <img
-          src={
-            "data:image/svg+xml;charset=utf-8," +
-            encodeURIComponent(
-              `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='20' viewBox='0 0 32 20'><rect width='32' height='20' fill='#f3f4f6'/></svg>`
-            )
-          }
+          src={blurPlaceholder}
           alt=""
           className="w-full h-full object-cover"
           draggable={false}
@@ -263,23 +197,17 @@ const ImageItem = memo(function ImageItem({
 
       {isVisible && !useBackground ? (
         <picture>
-          {/* webp source only when allowed */}
-          {!disableWebp && webp480 && (
-            <source
-              type="image/webp"
-              srcSet={`${webp480} 480w, ${webp768} 768w, ${webp1200} 1200w`}
-              sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
-            />
-          )}
-
-          {/* fallback srcset (possibly forced to jpeg on mobile) */}
+          <source
+            type="image/webp"
+            srcSet={`${webp480} 480w, ${webp768} 768w, ${webp1200} 1200w`}
+            sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
+          />
           <source
             srcSet={`${src480} 480w, ${src768} 768w, ${src1200} 1200w, ${src2000} 2000w`}
             sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
           />
-
           <img
-            src={currentSrc || getImageUrl(imageUrl)}
+            src={currentSrc || placeholderDataUrl}
             alt={caption || `Foto ${index + 1}`}
             className={`relative z-10 w-full h-full object-cover block transition-transform duration-500 ease-[cubic-bezier(.2,.9,.3,1)] ${
               loaded ? "scale-100 opacity-100" : "scale-105 opacity-0"
@@ -293,25 +221,20 @@ const ImageItem = memo(function ImageItem({
           />
         </picture>
       ) : useBackground ? (
+        // background fallback shows nothing inside but figure has backgroundStyle and click handler
         <div
           className="relative z-10 w-full h-full block"
           aria-hidden={false}
         />
       ) : (
         <img
-          src={
-            "data:image/svg+xml;charset=utf-8," +
-            encodeURIComponent(
-              `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='20' viewBox='0 0 32 20'><rect width='32' height='20' fill='#f3f4f6'/></svg>`
-            )
-          }
+          src={blurPlaceholder}
           alt={`placeholder ${index + 1}`}
           className="relative z-10 w-full h-full object-cover block"
           draggable={false}
         />
       )}
 
-      {/* decorative frame */}
       <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/60 mix-blend-normal" />
 
       <figcaption className="absolute left-3 bottom-3 bg-white/85 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-slate-700 shadow">
@@ -581,16 +504,7 @@ export default function DokumentasiGuest() {
 
   const [selectedYear, setSelectedYear] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
-
-  // detect mobile
-  const mobile =
-    typeof navigator !== "undefined" &&
-    /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(
-      navigator.userAgent
-    );
-
-  // smaller initial batch on mobile
-  const [visibleCount, setVisibleCount] = useState(mobile ? 12 : 24);
+  const [visibleCount, setVisibleCount] = useState(24);
 
   const [loadingYears, setLoadingYears] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(false);
@@ -606,7 +520,7 @@ export default function DokumentasiGuest() {
         const res = await api.get("/foto/years");
         const data = res.data;
         setYears(data);
-        if (data && data.length > 0) setSelectedYear(data[0]);
+        if (data.length > 0) setSelectedYear(data[0]);
       } catch (err) {
         console.error("Gagal mengambil tahun:", err);
       } finally {
@@ -626,7 +540,7 @@ export default function DokumentasiGuest() {
         });
         const data = res.data;
         setCategories(data);
-        setSelectedCategory(data && data.length > 0 ? data[0] : null);
+        setSelectedCategory(data[0] || null);
       } catch (err) {
         console.error("Gagal mengambil kategori:", err);
       } finally {
@@ -644,12 +558,10 @@ export default function DokumentasiGuest() {
         const res = await api.get(`/foto/photos`, {
           params: { year: selectedYear, category: selectedCategory },
         });
-        const mapped = (res.data || []).map((p) => ({
+        const mapped = res.data.map((p) => ({
           id: p.id,
-          // thumbnail for grid; fullLink for lightbox/download
-          thumbnailLink: p.thumbnailLink || p.fileId || p.url || "",
-          fullLink:
-            p.fullLink || p.originalUrl || p.url || p.thumbnailLink || "",
+          thumbnailLink: p.thumbnailLink || p.fileId || p.url,
+          fullLink: p.fullLink || p.originalUrl || p.thumbnailLink,
           title: p.title || p.name || "",
           caption:
             p.caption || p.description || `${selectedCategory} ${selectedYear}`,
@@ -657,8 +569,6 @@ export default function DokumentasiGuest() {
           year: selectedYear,
         }));
         setPhotos(mapped);
-        // reset visibleCount when category changes (mobile-aware)
-        setVisibleCount(mobile ? 12 : 24);
       } catch (err) {
         console.error("Gagal mengambil foto:", err);
       } finally {
@@ -666,20 +576,14 @@ export default function DokumentasiGuest() {
       }
     };
     fetchPhotos();
-  }, [selectedYear, selectedCategory, mobile]);
+  }, [selectedYear, selectedCategory]);
 
-  // keep visibleCount reset on category change (already handled above via setVisibleCount when photos loaded)
-  // compute visible slice
+  useEffect(() => setVisibleCount(24), [selectedCategory]);
+
   const visiblePhotos = useMemo(
     () => photos.slice(0, visibleCount),
     [photos, visibleCount]
   );
-
-  // safe compute absolute index (fallback to slice idx)
-  function computeAbsoluteIndex(photoSlice, idxSlice) {
-    const absoluteIndex = photos.findIndex((p) => p.id === photoSlice.id);
-    return absoluteIndex >= 0 ? absoluteIndex : idxSlice;
-  }
 
   const openLightboxAt = (absoluteIndex) => {
     if (absoluteIndex < 0 || absoluteIndex >= photos.length) return;
@@ -846,21 +750,17 @@ export default function DokumentasiGuest() {
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                 {visiblePhotos.map((photoSlice, idxSlice) => {
-                  const absoluteIndex = computeAbsoluteIndex(
-                    photoSlice,
-                    idxSlice
+                  // compute absolute index in photos array
+                  const absoluteIndex = photos.findIndex(
+                    (p) => p.id === photoSlice.id
                   );
                   return (
                     <div key={photoSlice.id || idxSlice}>
                       <ImageItem
                         originalUrl={photoSlice.thumbnailLink}
-                        fullLink={photoSlice.fullLink}
                         index={absoluteIndex}
                         caption={photoSlice.title || photoSlice.caption}
-                        onOpen={() => openLightboxAt(absoluteIndex)}
-                        width={mobile ? 260 : 400}
-                        height={mobile ? 180 : 300}
-                        disableWebp={mobile}
+                        onOpen={(i) => openLightboxAt(absoluteIndex)}
                       />
                     </div>
                   );
@@ -870,9 +770,7 @@ export default function DokumentasiGuest() {
               {photos.length > visibleCount && (
                 <div className="text-center mt-8">
                   <button
-                    onClick={() =>
-                      setVisibleCount((p) => p + (mobile ? 12 : 24))
-                    }
+                    onClick={() => setVisibleCount((p) => p + 24)}
                     className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-emerald-500 text-white shadow-lg hover:scale-105 transition"
                   >
                     Tampilkan Lebih Banyak
