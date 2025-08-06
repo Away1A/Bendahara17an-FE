@@ -49,26 +49,71 @@ function buildResponsiveUrl(originalUrl, width, fmt = "") {
 }
 
 /* ---------------- ImageItem (responsive, mobile-friendly, retry) ---------------- */
+/**
+ * ImageItem (safe)
+ *
+ * Props:
+ * - originalUrl: string (thumbnail / small)
+ * - fullLink: string (full image, optional)
+ * - index: number (absolute index)
+ * - caption: string
+ * - onOpen: function(index)
+ * - width, height: numbers (for aspect ratio)
+ * - disableWebp: boolean (if true, do not offer webp sources)
+ * - forceFmt: string|null (e.g. "jpeg" to force fmt param in URLs)
+ */
 const ImageItem = memo(function ImageItem({
   originalUrl,
+  fullLink,
   index,
   caption,
   onOpen,
   width = 400,
   height = 300,
-  fullLink,
+  disableWebp = false,
+  forceFmt = "",
 }) {
-  const imgRef = useRef();
+  const imgRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [currentSrc, setCurrentSrc] = useState("");
   const [fallbackStage, setFallbackStage] = useState(0);
   const [useBackground, setUseBackground] = useState(false);
 
-  const imageUrl = useMemo(() => originalUrl || "", [originalUrl]);
+  // ---------------- helper wrappers (assumes you have getImageUrl/buildResponsiveUrl)
+  // If not present, implement minimal stubs here or import from your utils.
+  // getImageUrl: resolve fileId or path to full absolute url
+  // buildResponsiveUrl: append ?w=...&fmt=... to getImageUrl result
+  if (typeof getImageUrl === "undefined") {
+    // minimal fallback (you should replace with your existing function)
+    // eslint-disable-next-line no-unused-vars
+    var getImageUrl = (u) => u || "";
+  }
+  if (typeof buildResponsiveUrl === "undefined") {
+    // eslint-disable-next-line no-unused-vars
+    var buildResponsiveUrl = (u, w, f = "") => {
+      if (!u) return "";
+      const base = getImageUrl(u);
+      const sep = base.includes("?") ? "&" : "?";
+      if (f) return `${base}${sep}w=${w}&fmt=${f}`;
+      return `${base}${sep}w=${w}`;
+    };
+  }
 
+  // Ensure we have an image URL to try
+  const imageUrl = useMemo(
+    () => originalUrl || fullLink || "",
+    [originalUrl, fullLink]
+  );
+
+  // IntersectionObserver for lazy-load
   useEffect(() => {
-    if (isMobileDevice()) {
+    if (
+      typeof navigator !== "undefined" &&
+      /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(
+        navigator.userAgent
+      )
+    ) {
       setIsVisible(true);
       return;
     }
@@ -92,15 +137,24 @@ const ImageItem = memo(function ImageItem({
     return () => obs && obs.disconnect();
   }, []);
 
-  const src768 = buildResponsiveUrl(imageUrl, 768);
-  const src480 = buildResponsiveUrl(imageUrl, 480);
-  const src1200 = buildResponsiveUrl(imageUrl, 1200);
-  const src2000 = buildResponsiveUrl(imageUrl, 2000);
+  // Build URLs with optional forcing format and webp toggle
+  const fmtForGrid = forceFmt || ""; // e.g. "jpeg" on mobile if provided
+  const src480 = buildResponsiveUrl(imageUrl, 480, fmtForGrid);
+  const src768 = buildResponsiveUrl(imageUrl, 768, fmtForGrid);
+  const src1200 = buildResponsiveUrl(imageUrl, 1200, fmtForGrid);
+  const src2000 = buildResponsiveUrl(imageUrl, 2000, fmtForGrid);
 
-  const webp480 = buildResponsiveUrl(imageUrl, 480, "webp");
-  const webp768 = buildResponsiveUrl(imageUrl, 768, "webp");
-  const webp1200 = buildResponsiveUrl(imageUrl, 1200, "webp");
+  const webp480 = !disableWebp
+    ? buildResponsiveUrl(imageUrl, 480, "webp")
+    : null;
+  const webp768 = !disableWebp
+    ? buildResponsiveUrl(imageUrl, 768, "webp")
+    : null;
+  const webp1200 = !disableWebp
+    ? buildResponsiveUrl(imageUrl, 1200, "webp")
+    : null;
 
+  // Ordered fallback list (unique)
   const fallbackList = useMemo(() => {
     const list = [];
     if (src768) list.push(src768);
@@ -108,10 +162,15 @@ const ImageItem = memo(function ImageItem({
     const resolved = getImageUrl(imageUrl) || "";
     if (resolved) list.push(resolved);
     if (fullLink) list.push(getImageUrl(fullLink));
+    // final fallback transparent placeholder (small)
+    const placeholderDataUrl =
+      "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
     list.push(placeholderDataUrl);
+    // unique
     return Array.from(new Set(list)).filter(Boolean);
   }, [src768, src480, imageUrl, fullLink]);
 
+  // Initialize currentSrc when visible
   useEffect(() => {
     if (!isVisible) return;
     if (!currentSrc && fallbackList.length > 0) {
@@ -120,7 +179,8 @@ const ImageItem = memo(function ImageItem({
     }
   }, [isVisible, fallbackList, currentSrc]);
 
-  function tryNextFallback() {
+  // Try next fallback on failure
+  const tryNextFallback = useCallback(() => {
     setFallbackStage((s) => {
       const next = s + 1;
       if (next >= fallbackList.length) {
@@ -130,11 +190,11 @@ const ImageItem = memo(function ImageItem({
       setCurrentSrc(fallbackList[next]);
       return next;
     });
-  }
+  }, [fallbackList]);
 
   function handleImgError(e) {
-    // optional debugging:
-    // console.warn('Image error:', e?.currentTarget?.src);
+    // log minimal for debugging (remove in prod if noisy)
+    // console.warn("Image load error:", e?.currentTarget?.src);
     tryNextFallback();
   }
 
@@ -148,8 +208,8 @@ const ImageItem = memo(function ImageItem({
     if (useBackground) setUseBackground(false);
   }
 
-  // background fallback: prefer fullLink (if available), else resolved original, else blur
-  const bgCandidate = getImageUrl(fullLink || imageUrl) || blurPlaceholder;
+  // Background candidate in case of total failure (prefer fullLink)
+  const bgCandidate = getImageUrl(fullLink || imageUrl) || "";
   const backgroundStyle = useBackground
     ? {
         backgroundImage: `url('${bgCandidate}')`,
@@ -158,7 +218,7 @@ const ImageItem = memo(function ImageItem({
       }
     : undefined;
 
-  // Make whole figure interactive — click opens lightbox in all modes
+  // Always make figure interactive so lightbox can open even if img failed
   const handleOpen = (e) => {
     e?.stopPropagation();
     if (typeof onOpen === "function") onOpen(index);
@@ -181,6 +241,7 @@ const ImageItem = memo(function ImageItem({
       role="button"
       aria-label={`Buka foto ${index + 1}`}
     >
+      {/* blur placeholder behind image */}
       <div
         className={`absolute inset-0 z-0 transition-opacity duration-300 ${
           loaded ? "opacity-0" : "opacity-100"
@@ -188,7 +249,12 @@ const ImageItem = memo(function ImageItem({
         aria-hidden
       >
         <img
-          src={blurPlaceholder}
+          src={
+            "data:image/svg+xml;charset=utf-8," +
+            encodeURIComponent(
+              `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='20' viewBox='0 0 32 20'><rect width='32' height='20' fill='#f3f4f6'/></svg>`
+            )
+          }
           alt=""
           className="w-full h-full object-cover"
           draggable={false}
@@ -197,17 +263,23 @@ const ImageItem = memo(function ImageItem({
 
       {isVisible && !useBackground ? (
         <picture>
-          <source
-            type="image/webp"
-            srcSet={`${webp480} 480w, ${webp768} 768w, ${webp1200} 1200w`}
-            sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
-          />
+          {/* webp source only when allowed */}
+          {!disableWebp && webp480 && (
+            <source
+              type="image/webp"
+              srcSet={`${webp480} 480w, ${webp768} 768w, ${webp1200} 1200w`}
+              sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
+            />
+          )}
+
+          {/* fallback srcset (possibly forced to jpeg on mobile) */}
           <source
             srcSet={`${src480} 480w, ${src768} 768w, ${src1200} 1200w, ${src2000} 2000w`}
             sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
           />
+
           <img
-            src={currentSrc || placeholderDataUrl}
+            src={currentSrc || getImageUrl(imageUrl)}
             alt={caption || `Foto ${index + 1}`}
             className={`relative z-10 w-full h-full object-cover block transition-transform duration-500 ease-[cubic-bezier(.2,.9,.3,1)] ${
               loaded ? "scale-100 opacity-100" : "scale-105 opacity-0"
@@ -221,20 +293,25 @@ const ImageItem = memo(function ImageItem({
           />
         </picture>
       ) : useBackground ? (
-        // background fallback shows nothing inside but figure has backgroundStyle and click handler
         <div
           className="relative z-10 w-full h-full block"
           aria-hidden={false}
         />
       ) : (
         <img
-          src={blurPlaceholder}
+          src={
+            "data:image/svg+xml;charset=utf-8," +
+            encodeURIComponent(
+              `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='20' viewBox='0 0 32 20'><rect width='32' height='20' fill='#f3f4f6'/></svg>`
+            )
+          }
           alt={`placeholder ${index + 1}`}
           className="relative z-10 w-full h-full object-cover block"
           draggable={false}
         />
       )}
 
+      {/* decorative frame */}
       <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/60 mix-blend-normal" />
 
       <figcaption className="absolute left-3 bottom-3 bg-white/85 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-slate-700 shadow">
