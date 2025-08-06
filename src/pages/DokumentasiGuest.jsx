@@ -56,7 +56,7 @@ const ImageItem = memo(function ImageItem({
   onOpen,
   width = 400,
   height = 300,
-  fullLink, // optional, in case parent provides separate full image url
+  fullLink,
 }) {
   const imgRef = useRef();
   const [isVisible, setIsVisible] = useState(false);
@@ -92,7 +92,6 @@ const ImageItem = memo(function ImageItem({
     return () => obs && obs.disconnect();
   }, []);
 
-  // build variants (no fmt on the "safe" fallback)
   const src768 = buildResponsiveUrl(imageUrl, 768);
   const src480 = buildResponsiveUrl(imageUrl, 480);
   const src1200 = buildResponsiveUrl(imageUrl, 1200);
@@ -102,22 +101,17 @@ const ImageItem = memo(function ImageItem({
   const webp768 = buildResponsiveUrl(imageUrl, 768, "webp");
   const webp1200 = buildResponsiveUrl(imageUrl, 1200, "webp");
 
-  // ordered fallback list - will try sequentially
   const fallbackList = useMemo(() => {
     const list = [];
     if (src768) list.push(src768);
     if (src480) list.push(src480);
-    // include original resolved (no resize fmt)
     const resolved = getImageUrl(imageUrl) || "";
     if (resolved) list.push(resolved);
-    // if parent provided fullLink use it as stronger fallback
     if (fullLink) list.push(getImageUrl(fullLink));
-    // final tiny transparent gif (avoid browser broken icon by using background later)
     list.push(placeholderDataUrl);
-    return Array.from(new Set(list)).filter(Boolean); // unique
+    return Array.from(new Set(list)).filter(Boolean);
   }, [src768, src480, imageUrl, fullLink]);
 
-  // initialize currentSrc when visible
   useEffect(() => {
     if (!isVisible) return;
     if (!currentSrc && fallbackList.length > 0) {
@@ -130,7 +124,6 @@ const ImageItem = memo(function ImageItem({
     setFallbackStage((s) => {
       const next = s + 1;
       if (next >= fallbackList.length) {
-        // all failed
         setUseBackground(true);
         return s;
       }
@@ -140,44 +133,54 @@ const ImageItem = memo(function ImageItem({
   }
 
   function handleImgError(e) {
-    // try next fallback
+    // optional debugging:
+    // console.warn('Image error:', e?.currentTarget?.src);
     tryNextFallback();
   }
 
   function handleImgLoad(e) {
-    // check naturalWidth to detect subtle failures
     const w = e.currentTarget.naturalWidth || 0;
     if (w === 0) {
-      // treat as failure
       tryNextFallback();
       return;
     }
     setLoaded(true);
-    // if using background fallback previously, reset
     if (useBackground) setUseBackground(false);
   }
 
-  // If we decided to use background fallback, show blurPlaceholder as background
+  // background fallback: prefer fullLink (if available), else resolved original, else blur
+  const bgCandidate = getImageUrl(fullLink || imageUrl) || blurPlaceholder;
   const backgroundStyle = useBackground
     ? {
-        backgroundImage: `url('${getImageUrl(imageUrl) || blurPlaceholder}')`,
+        backgroundImage: `url('${bgCandidate}')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }
     : undefined;
 
+  // Make whole figure interactive — click opens lightbox in all modes
+  const handleOpen = (e) => {
+    e?.stopPropagation();
+    if (typeof onOpen === "function") onOpen(index);
+  };
+
   return (
     <figure
       ref={imgRef}
-      className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-white/60 to-slate-50 border border-slate-100 shadow-sm transform-gpu hover:scale-[1.03] transition-transform duration-300"
+      onClick={handleOpen}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") handleOpen(e);
+      }}
+      className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-white/60 to-slate-50 border border-slate-100 shadow-sm transform-gpu hover:scale-[1.03] transition-transform duration-300 cursor-zoom-in"
       style={{
         aspectRatio: `${width} / ${height}`,
         minHeight: 120,
         ...(backgroundStyle || {}),
       }}
-      aria-hidden={useBackground}
+      role="button"
+      aria-label={`Buka foto ${index + 1}`}
     >
-      {/* Blur placeholder behind image */}
       <div
         className={`absolute inset-0 z-0 transition-opacity duration-300 ${
           loaded ? "opacity-0" : "opacity-100"
@@ -194,13 +197,11 @@ const ImageItem = memo(function ImageItem({
 
       {isVisible && !useBackground ? (
         <picture>
-          {/* webp source (browser will choose) */}
           <source
             type="image/webp"
             srcSet={`${webp480} 480w, ${webp768} 768w, ${webp1200} 1200w`}
             sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
           />
-          {/* fallback srcset */}
           <source
             srcSet={`${src480} 480w, ${src768} 768w, ${src1200} 1200w, ${src2000} 2000w`}
             sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
@@ -215,16 +216,16 @@ const ImageItem = memo(function ImageItem({
             decoding="async"
             onLoad={handleImgLoad}
             onError={handleImgError}
-            onClick={() => onOpen(index)}
-            style={{ cursor: "zoom-in" }}
             draggable={false}
-            role="button"
-            aria-label={`Buka foto ${index + 1}`}
+            role="presentation"
           />
         </picture>
       ) : useBackground ? (
-        // If all image attempts failed, we rely on background image to avoid broken icon
-        <div className="relative z-10 w-full h-full block" aria-hidden />
+        // background fallback shows nothing inside but figure has backgroundStyle and click handler
+        <div
+          className="relative z-10 w-full h-full block"
+          aria-hidden={false}
+        />
       ) : (
         <img
           src={blurPlaceholder}
@@ -234,7 +235,6 @@ const ImageItem = memo(function ImageItem({
         />
       )}
 
-      {/* decorative frame */}
       <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/60 mix-blend-normal" />
 
       <figcaption className="absolute left-3 bottom-3 bg-white/85 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-slate-700 shadow">
