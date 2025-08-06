@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://dog-trusted-preferably.ngrok-free.app/api",
+  baseURL: "https://tarka.ngrok.app/api",
   headers: {
     "ngrok-skip-browser-warning": "true",
   }, // Ganti jika backend kamu berbeda
