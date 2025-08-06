@@ -40,3 +40,17 @@
 .read-the-docs {
   color: #888;
 }
+
+.page {
+  background-color: white;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+}
+
+/* sembunyikan scrollbar cross-browser ketika menggunakan overflow-x-auto */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

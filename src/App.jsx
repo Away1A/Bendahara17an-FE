@@ -9,6 +9,7 @@ import Pengeluaran from "./pages/Pengeluaran";
 import Laporan from "./pages/Laporan";
 import LaporanGuest from "./pages/LaporanGuest";
 import AcaraGuest from "./pages/AcaraGuest";
+import DokumentasiGuest from "./pages/DokumentasiGuest";
 import Pendaftaran from "./pages/Pendaftaran";
 import PengajuanMaker from "./pages/pengajuan/PengajuanMaker";
 import PengajuanChecker from "./pages/pengajuan/PengajuanChecker";
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/laporan/guest" element={<LaporanGuest />} />
             <Route path="/acara/guest" element={<AcaraGuest />} />
+            <Route path="/dokumentasi/guest" element={<DokumentasiGuest />} />
 
             {/* Route utama diarahkan berdasarkan login */}
             <Route
