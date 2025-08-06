@@ -56,27 +56,27 @@ const ImageItem = memo(function ImageItem({
   onOpen,
   width = 400,
   height = 300,
+  fullLink, // optional, in case parent provides separate full image url
 }) {
   const imgRef = useRef();
   const [isVisible, setIsVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [failedOnce, setFailedOnce] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState("");
+  const [fallbackStage, setFallbackStage] = useState(0);
+  const [useBackground, setUseBackground] = useState(false);
 
   const imageUrl = useMemo(() => originalUrl || "", [originalUrl]);
 
   useEffect(() => {
-    // If mobile, load immediately (some mobiles fail to trigger observer reliably)
     if (isMobileDevice()) {
       setIsVisible(true);
       return;
     }
-
     const el = imgRef.current;
     if (!el) {
       setIsVisible(true);
       return;
     }
-
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -86,44 +86,96 @@ const ImageItem = memo(function ImageItem({
           }
         });
       },
-      // larger rootMargin so images start loading earlier on slow networks
       { rootMargin: "800px", threshold: 0.01 }
     );
     obs.observe(el);
     return () => obs && obs.disconnect();
   }, []);
 
-  // responsive srcsets (uses buildResponsiveUrl which resolves through getImageUrl)
-  const src480 = buildResponsiveUrl(imageUrl, 480);
+  // build variants (no fmt on the "safe" fallback)
   const src768 = buildResponsiveUrl(imageUrl, 768);
+  const src480 = buildResponsiveUrl(imageUrl, 480);
   const src1200 = buildResponsiveUrl(imageUrl, 1200);
   const src2000 = buildResponsiveUrl(imageUrl, 2000);
 
-  // webp variants
   const webp480 = buildResponsiveUrl(imageUrl, 480, "webp");
   const webp768 = buildResponsiveUrl(imageUrl, 768, "webp");
   const webp1200 = buildResponsiveUrl(imageUrl, 1200, "webp");
 
-  function handleError(e) {
-    // first failure: try switching to a low-res or webp (if not tried)
-    if (!failedOnce) {
-      setFailedOnce(true);
-      // try to replace src with a lower-res (480) or webp
-      e.currentTarget.src = src480 || webp480 || placeholderDataUrl;
+  // ordered fallback list - will try sequentially
+  const fallbackList = useMemo(() => {
+    const list = [];
+    if (src768) list.push(src768);
+    if (src480) list.push(src480);
+    // include original resolved (no resize fmt)
+    const resolved = getImageUrl(imageUrl) || "";
+    if (resolved) list.push(resolved);
+    // if parent provided fullLink use it as stronger fallback
+    if (fullLink) list.push(getImageUrl(fullLink));
+    // final tiny transparent gif (avoid browser broken icon by using background later)
+    list.push(placeholderDataUrl);
+    return Array.from(new Set(list)).filter(Boolean); // unique
+  }, [src768, src480, imageUrl, fullLink]);
+
+  // initialize currentSrc when visible
+  useEffect(() => {
+    if (!isVisible) return;
+    if (!currentSrc && fallbackList.length > 0) {
+      setCurrentSrc(fallbackList[0]);
+      setFallbackStage(0);
+    }
+  }, [isVisible, fallbackList, currentSrc]);
+
+  function tryNextFallback() {
+    setFallbackStage((s) => {
+      const next = s + 1;
+      if (next >= fallbackList.length) {
+        // all failed
+        setUseBackground(true);
+        return s;
+      }
+      setCurrentSrc(fallbackList[next]);
+      return next;
+    });
+  }
+
+  function handleImgError(e) {
+    // try next fallback
+    tryNextFallback();
+  }
+
+  function handleImgLoad(e) {
+    // check naturalWidth to detect subtle failures
+    const w = e.currentTarget.naturalWidth || 0;
+    if (w === 0) {
+      // treat as failure
+      tryNextFallback();
       return;
     }
-
-    // second failure: final fallback
-    e.currentTarget.onerror = null;
-    e.currentTarget.src = placeholderDataUrl;
     setLoaded(true);
+    // if using background fallback previously, reset
+    if (useBackground) setUseBackground(false);
   }
+
+  // If we decided to use background fallback, show blurPlaceholder as background
+  const backgroundStyle = useBackground
+    ? {
+        backgroundImage: `url('${getImageUrl(imageUrl) || blurPlaceholder}')`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }
+    : undefined;
 
   return (
     <figure
       ref={imgRef}
       className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-white/60 to-slate-50 border border-slate-100 shadow-sm transform-gpu hover:scale-[1.03] transition-transform duration-300"
-      style={{ aspectRatio: `${width} / ${height}`, minHeight: 120 }}
+      style={{
+        aspectRatio: `${width} / ${height}`,
+        minHeight: 120,
+        ...(backgroundStyle || {}),
+      }}
+      aria-hidden={useBackground}
     >
       {/* Blur placeholder behind image */}
       <div
@@ -140,29 +192,29 @@ const ImageItem = memo(function ImageItem({
         />
       </div>
 
-      {isVisible ? (
+      {isVisible && !useBackground ? (
         <picture>
-          {/* prefer webp if backend supports generating webp */}
+          {/* webp source (browser will choose) */}
           <source
             type="image/webp"
             srcSet={`${webp480} 480w, ${webp768} 768w, ${webp1200} 1200w`}
             sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
           />
-          {/* fallback types / original format */}
+          {/* fallback srcset */}
           <source
             srcSet={`${src480} 480w, ${src768} 768w, ${src1200} 1200w, ${src2000} 2000w`}
             sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw"
           />
           <img
-            src={src768 || getImageUrl(imageUrl)}
+            src={currentSrc || placeholderDataUrl}
             alt={caption || `Foto ${index + 1}`}
             className={`relative z-10 w-full h-full object-cover block transition-transform duration-500 ease-[cubic-bezier(.2,.9,.3,1)] ${
               loaded ? "scale-100 opacity-100" : "scale-105 opacity-0"
             }`}
             loading="lazy"
             decoding="async"
-            onLoad={() => setLoaded(true)}
-            onError={handleError}
+            onLoad={handleImgLoad}
+            onError={handleImgError}
             onClick={() => onOpen(index)}
             style={{ cursor: "zoom-in" }}
             draggable={false}
@@ -170,6 +222,9 @@ const ImageItem = memo(function ImageItem({
             aria-label={`Buka foto ${index + 1}`}
           />
         </picture>
+      ) : useBackground ? (
+        // If all image attempts failed, we rely on background image to avoid broken icon
+        <div className="relative z-10 w-full h-full block" aria-hidden />
       ) : (
         <img
           src={blurPlaceholder}
