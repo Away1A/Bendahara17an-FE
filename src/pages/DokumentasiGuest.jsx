@@ -271,21 +271,10 @@ function Lightbox({ photos, startIndex, onClose }) {
     const photo = photos[index];
 
     // Build a prioritized list of URLs to try (highest quality first)
-    const resolvedMain = getImageUrl(
-      photo.fullLink || photo.thumbnailLink || ""
-    );
-    const src1200 = buildResponsiveUrl(
-      photo.fullLink || photo.thumbnailLink,
-      1200
-    );
-    const src768 = buildResponsiveUrl(
-      photo.fullLink || photo.thumbnailLink,
-      768
-    );
-    const src480 = buildResponsiveUrl(
-      photo.fullLink || photo.thumbnailLink,
-      480
-    );
+    const resolvedMain = getImageUrl(photo.full || photo.thumbnailLink || "");
+    const src1200 = buildResponsiveUrl(photo.full || photo.thumbnailLink, 1200);
+    const src768 = buildResponsiveUrl(photo.full || photo.thumbnailLink, 768);
+    const src480 = buildResponsiveUrl(photo.full || photo.thumbnailLink, 480);
 
     const candidates = Array.from(
       new Set([resolvedMain, src1200, src768, src480])
@@ -552,7 +541,7 @@ export default function DokumentasiGuest() {
         const mapped = res.data.map((p) => ({
           id: p.id,
           thumbnailLink: p.thumbnailLink || p.fileId || p.url,
-          fullLink: p.fullLink || p.originalUrl || p.thumbnailLink,
+          full: p.full || p.fullLink || p.originalUrl || p.thumbnailLink,
           title: p.title || p.name || "",
           caption:
             p.caption || p.description || `${selectedCategory} ${selectedYear}`,
