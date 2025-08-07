@@ -26,28 +26,31 @@ export default function GuestNavbar() {
     <Link
       to={to}
       onClick={() => setIsOpen(false)}
-      className="px-4 py-2 text-sm font-medium text-white hover:text-yellow-300 transition duration-300"
+      className="px-4 py-2 text-sm font-medium text-slate-100 hover:text-yellow-400 transition"
     >
       {label}
     </Link>
   );
 
   return (
-    <nav className="bg-gradient-to-r from-red-500 via-rose-400 to-orange-400 shadow-xl px-6 py-4 sticky top-0 z-50 rounded-b-3xl">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo */}
+    <nav className="bg-slate-900 shadow-md sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <Link
           to="/"
-          className="flex items-center gap-2 text-2xl font-extrabold text-white tracking-wide"
+          className="flex items-center gap-2 text-xl font-semibold text-white tracking-tight"
         >
-          <span>🌟</span>
-          <span>FORUM REMAJA</span>
+          <img
+            src="/PNG WHITE.png"
+            alt="Forum Remaja Logo"
+            className="w-10 h-10 object-contain"
+          />
+          Forum Remaja
         </Link>
 
-        {/* Mobile Menu Toggle */}
+        {/* Mobile Toggle */}
         <button
           onClick={toggleMenu}
-          className="md:hidden p-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition"
+          className="md:hidden p-2 text-slate-200 rounded-lg hover:bg-slate-800 transition"
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -62,21 +65,21 @@ export default function GuestNavbar() {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={toggleDropdown}
-              className="flex items-center gap-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition"
+              className="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-full text-white transition"
             >
               <img
-                src="https://ui-avatars.com/api/?name=Guest&background=ffffff&color=ff0000&size=32"
+                src="https://ui-avatars.com/api/?name=Guest&background=334155&color=ffffff&size=32"
                 alt="Guest Avatar"
-                className="w-8 h-8 rounded-full shadow-md"
+                className="w-8 h-8 rounded-full"
               />
-              <span className="text-sm font-medium">Guest</span>
+              <span className="text-sm">Guest</span>
               <ChevronDown size={16} />
             </button>
             {showDropdown && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg overflow-hidden animate-fade-in-down z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-slate-800 rounded-xl shadow-lg overflow-hidden z-50">
                 <button
                   onClick={handleLogin}
-                  className="w-full flex items-center gap-2 px-5 py-3 text-sm text-gray-800 hover:bg-gray-100 transition"
+                  className="w-full flex items-center gap-2 px-5 py-3 text-sm text-slate-100 hover:bg-slate-700 transition"
                 >
                   <LogOut size={16} />
                   Login Admin
@@ -89,17 +92,19 @@ export default function GuestNavbar() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden mt-4 flex flex-col gap-2 bg-white/10 backdrop-blur-md p-4 rounded-2xl text-white text-sm">
-          {navItem("/laporan/guest", "Keuangan")}
-          {navItem("/acara/guest", "Acara")}
-          {navItem("/dokumentasi/guest", "Dokumentasi")}
-          <button
-            onClick={handleLogin}
-            className="flex items-center gap-2 px-4 py-3 bg-white/20 hover:bg-white/30 rounded-lg transition"
-          >
-            <LogOut size={16} />
-            Login Admin
-          </button>
+        <div className="md:hidden bg-slate-800 border-t border-slate-700">
+          <div className="px-4 py-3 flex flex-col gap-2 text-slate-100">
+            {navItem("/laporan/guest", "Keuangan")}
+            {navItem("/acara/guest", "Acara")}
+            {navItem("/dokumentasi/guest", "Dokumentasi")}
+            <button
+              onClick={handleLogin}
+              className="flex items-center gap-2 px-4 py-2 mt-2 bg-slate-700 hover:bg-slate-600 rounded-md transition text-sm"
+            >
+              <LogOut size={16} />
+              Login Admin
+            </button>
+          </div>
         </div>
       )}
     </nav>

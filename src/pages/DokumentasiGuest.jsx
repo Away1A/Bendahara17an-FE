@@ -133,8 +133,6 @@ const ImageItem = memo(function ImageItem({
   }
 
   function handleImgError(e) {
-    // optional debugging:
-    // console.warn('Image error:', e?.currentTarget?.src);
     tryNextFallback();
   }
 
@@ -148,7 +146,6 @@ const ImageItem = memo(function ImageItem({
     if (useBackground) setUseBackground(false);
   }
 
-  // background fallback: prefer fullLink (if available), else resolved original, else blur
   const bgCandidate = getImageUrl(fullLink || imageUrl) || blurPlaceholder;
   const backgroundStyle = useBackground
     ? {
@@ -158,7 +155,6 @@ const ImageItem = memo(function ImageItem({
       }
     : undefined;
 
-  // Make whole figure interactive — click opens lightbox in all modes
   const handleOpen = (e) => {
     e?.stopPropagation();
     if (typeof onOpen === "function") onOpen(index);
@@ -172,7 +168,7 @@ const ImageItem = memo(function ImageItem({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") handleOpen(e);
       }}
-      className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-white/60 to-slate-50 border border-slate-100 shadow-sm transform-gpu hover:scale-[1.03] transition-transform duration-300 cursor-zoom-in"
+      className="relative rounded-xl overflow-hidden bg-white border border-gray-100 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] hover:shadow-lg group"
       style={{
         aspectRatio: `${width} / ${height}`,
         minHeight: 120,
@@ -209,9 +205,9 @@ const ImageItem = memo(function ImageItem({
           <img
             src={currentSrc || placeholderDataUrl}
             alt={caption || `Foto ${index + 1}`}
-            className={`relative z-10 w-full h-full object-cover block transition-transform duration-500 ease-[cubic-bezier(.2,.9,.3,1)] ${
+            className={`relative z-10 w-full h-full object-cover block transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
               loaded ? "scale-100 opacity-100" : "scale-105 opacity-0"
-            }`}
+            } group-hover:scale-105`}
             loading="lazy"
             decoding="async"
             onLoad={handleImgLoad}
@@ -221,7 +217,6 @@ const ImageItem = memo(function ImageItem({
           />
         </picture>
       ) : useBackground ? (
-        // background fallback shows nothing inside but figure has backgroundStyle and click handler
         <div
           className="relative z-10 w-full h-full block"
           aria-hidden={false}
@@ -235,17 +230,18 @@ const ImageItem = memo(function ImageItem({
         />
       )}
 
-      <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/60 mix-blend-normal" />
+      <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-white/60 mix-blend-normal" />
 
-      <figcaption className="absolute left-3 bottom-3 bg-white/85 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-slate-700 shadow">
-        {caption}
-      </figcaption>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 flex items-end p-4">
+        <figcaption className="text-white text-sm font-medium truncate w-full">
+          {caption}
+        </figcaption>
+      </div>
     </figure>
   );
 });
 
 /* ---------------- Lightbox modal ---------------- */
-/* Lightbox (improved safe loader) */
 function Lightbox({ photos, startIndex, onClose }) {
   const [index, setIndex] = useState(startIndex || 0);
   const [loading, setLoading] = useState(true);
@@ -270,7 +266,6 @@ function Lightbox({ photos, startIndex, onClose }) {
 
     const photo = photos[index];
 
-    // Build a prioritized list of URLs to try (highest quality first)
     const resolvedMain = getImageUrl(photo.full || photo.thumbnailLink || "");
     const src1200 = buildResponsiveUrl(photo.full || photo.thumbnailLink, 1200);
     const src768 = buildResponsiveUrl(photo.full || photo.thumbnailLink, 768);
@@ -280,24 +275,17 @@ function Lightbox({ photos, startIndex, onClose }) {
       new Set([resolvedMain, src1200, src768, src480])
     ).filter(Boolean);
 
-    // Safety thresholds
-    const MAX_DIM = 8000; // max allowed width or height (tweakable)
-    // try to load candidate sequentially
+    const MAX_DIM = 8000;
     (async () => {
       for (let i = 0; i < candidates.length; i++) {
         if (activeRef.current.cancelled) return;
         const url = candidates[i];
         try {
-          // Preload using JS Image
           const img = new Image();
-          // If your server requires CORS, uncomment next line and ensure server allows origin
-          // img.crossOrigin = "anonymous";
           img.src = url;
 
-          // wait for load or error
           await new Promise((resolve, reject) => {
             const to = setTimeout(() => {
-              // timeout (avoid waiting forever)
               reject(new Error("timeout"));
             }, 8000);
 
@@ -311,37 +299,29 @@ function Lightbox({ photos, startIndex, onClose }) {
             };
           });
 
-          // If browser supports decode, await it (extra safety)
           if (img.decode) {
             try {
               await img.decode();
             } catch (decErr) {
-              // decode failed -> try next candidate
               continue;
             }
           }
 
-          // check natural size to avoid extremely large images
           const w = img.naturalWidth || 0;
           const h = img.naturalHeight || 0;
           if (w > MAX_DIM || h > MAX_DIM) {
-            // image likely enormous — skip to next (fallback to smaller)
             continue;
           }
 
-          // success: set as display source and exit loop
           setDisplaySrc(url);
           setLoading(false);
           setError(false);
           return;
         } catch (e) {
-          // try next candidate
-          // console.warn("lightbox preload fail", url, e);
           continue;
         }
       }
 
-      // if all candidates exhausted
       setLoading(false);
       setError(true);
     })();
@@ -369,7 +349,7 @@ function Lightbox({ photos, startIndex, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 sm:p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-md"
       onClick={onClose}
     >
       <div
@@ -378,16 +358,17 @@ function Lightbox({ photos, startIndex, onClose }) {
       >
         {loading && (
           <div className="text-white flex flex-col items-center gap-3">
-            <div className="loader" aria-hidden />{" "}
-            {/* you can style .loader via CSS */}
-            <div>Memuat gambar...</div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+            <div className="text-white/80">Memuat gambar...</div>
           </div>
         )}
 
         {error && !loading && (
-          <div className="text-white text-center">
-            <div className="font-semibold mb-2">Gagal memuat gambar</div>
-            <div className="text-sm text-white/80">
+          <div className="text-white text-center max-w-md">
+            <div className="font-semibold mb-2 text-lg">
+              Gagal memuat gambar
+            </div>
+            <div className="text-sm text-white/80 mb-4">
               Coba unduh atau buka lewat link.
             </div>
             <div className="mt-3">
@@ -395,9 +376,21 @@ function Lightbox({ photos, startIndex, onClose }) {
                 href={getImageUrl(photo.full || photo.thumbnailLink)}
                 target="_blank"
                 rel="noreferrer"
-                className="underline text-white/90"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
               >
-                Buka gambar di tab baru
+                <span>Buka gambar di tab baru</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </a>
             </div>
           </div>
@@ -416,8 +409,6 @@ function Lightbox({ photos, startIndex, onClose }) {
             }}
             draggable={false}
             onError={(e) => {
-              // fallback if something unexpected happens at render time
-              // try small size or show error
               setDisplaySrc(
                 buildResponsiveUrl(photo.full || photo.thumbnailLink, 480)
               );
@@ -427,41 +418,78 @@ function Lightbox({ photos, startIndex, onClose }) {
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 bg-white/90 hover:bg-white px-3 py-2 rounded-full shadow"
+          className="absolute top-6 right-6 bg-white/10 hover:bg-white/20 p-2.5 rounded-full shadow backdrop-blur-lg transition-colors"
           aria-label="Tutup"
         >
-          ✕
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
         </button>
 
-        <div className="absolute left-4 top-1/2 -translate-y-1/2">
+        <div className="absolute left-6 top-1/2 -translate-y-1/2">
           <button
             onClick={(e) => {
               e?.stopPropagation();
               setIndex((i) => (i - 1 + photos.length) % photos.length);
             }}
-            className="bg-white/90 hover:bg-white p-2 rounded-full shadow"
+            className="bg-white/10 hover:bg-white/20 p-3 rounded-full shadow backdrop-blur-lg transition-colors"
             aria-label="Sebelumnya"
           >
-            ‹
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-white"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
           </button>
         </div>
-        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+        <div className="absolute right-6 top-1/2 -translate-y-1/2">
           <button
             onClick={(e) => {
               e?.stopPropagation();
               setIndex((i) => (i + 1) % photos.length);
             }}
-            className="bg-white/90 hover:bg-white p-2 rounded-full shadow"
+            className="bg-white/10 hover:bg-white/20 p-3 rounded-full shadow backdrop-blur-lg transition-colors"
             aria-label="Selanjutnya"
           >
-            ›
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-white"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
           </button>
         </div>
 
-        <div className="mt-3 flex items-center justify-between px-1 absolute bottom-3 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)]">
-          <div className="text-white text-sm">
-            <div className="font-semibold">{photo.title || photo.caption}</div>
-            <div className="text-slate-200 text-xs">
+        <div className="mt-3 flex items-center justify-between px-1 absolute bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-2xl bg-black/50 backdrop-blur-sm rounded-xl py-3 px-4">
+          <div className="text-white">
+            <div className="font-semibold text-lg">
+              {photo.title || photo.caption}
+            </div>
+            <div className="text-slate-200 text-sm">
               {photo.year || ""} • {photo.category || ""}
             </div>
           </div>
@@ -574,103 +602,102 @@ export default function DokumentasiGuest() {
   return (
     <>
       <GuestNavbar />
-      <main className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-slate-100 text-slate-800 font-[Inter]">
-        <section className="relative overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="flex flex-col md:flex-row items-start gap-6 py-12">
+
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden pt-16 pb-20 md:pb-28 bg-gradient-to-r from-blue-900 to-indigo-800 text-white">
+          <div className="absolute inset-0 z-0">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/20 to-black/50"></div>
+            <div className="absolute inset-0 bg-cover bg-center opacity-20"></div>
+          </div>
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-8">
+            <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1">
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-slate-900 leading-tight drop-shadow">
-                  📚 Buku Tahunan RW.09
+                <div className="inline-block bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm mb-4">
+                  <span className="text-blue-300">📸 Galeri Digital RW.09</span>
+                </div>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold max-w-2xl leading-tight">
+                  Mengabadikan Momen{" "}
+                  <span className="text-blue-300">Bersama</span> Warga
                 </h1>
-                <p className="mt-4 text-slate-600 text-lg max-w-2xl leading-relaxed">
-                  Koleksi momen warga — pilih tahun & kategori. Ketuk atau klik
-                  foto untuk melihat lebih besar. Nikmati perjalanan nostalgia!
+                <p className="mt-6 text-lg text-blue-100 max-w-2xl leading-relaxed">
+                  Jelajahi koleksi dokumentasi perjalanan RW.09 dari tahun ke
+                  tahun. Setiap foto adalah cerita, setiap momen adalah kenangan
+                  yang tak terlupakan.
                 </p>
+
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                    <div className="text-blue-200 text-sm">Total Tahun</div>
+                    <div className="text-xl font-bold">{years.length}</div>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                    <div className="text-blue-200 text-sm">Total Foto</div>
+                    <div className="text-xl font-bold">{photos.length}</div>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                    <div className="text-blue-200 text-sm">Tahun Aktif</div>
+                    <div className="text-xl font-bold">
+                      {selectedYear || "-"}
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <aside className="hidden md:flex md:flex-col gap-5 w-72">
-                <div className="bg-white/70 backdrop-blur-md border border-slate-200 rounded-2xl p-4 shadow-xl">
-                  <div className="text-xs text-slate-500 uppercase font-semibold mb-2 tracking-wider">
-                    Tahun
-                  </div>
-                  <div className="flex flex-col gap-2 max-h-64 overflow-auto pr-1">
-                    {loadingYears ? (
-                      <div className="animate-pulse text-slate-400">
-                        Memuat...
-                      </div>
-                    ) : (
-                      years.map((y) => (
-                        <button
-                          key={y}
-                          onClick={() => {
-                            setSelectedYear(y);
-                            setSelectedCategory(null);
-                            setPhotos([]);
-                          }}
-                          className={`text-left w-full px-3 py-2 rounded-lg transition duration-200 ease-in-out font-medium border ${
-                            selectedYear === y
-                              ? "bg-indigo-600 text-white shadow-md ring-2 ring-indigo-400"
-                              : "bg-white hover:bg-indigo-50 text-slate-700"
-                          }`}
-                          aria-pressed={selectedYear === y}
-                        >
-                          {y}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-tr from-white via-slate-50 to-slate-100 border border-slate-200 rounded-2xl p-4 shadow-md flex flex-col gap-1 items-start">
-                  <div className="text-xs text-slate-500 uppercase font-semibold tracking-wider">
-                    Total Foto
-                  </div>
-                  <div className="text-4xl font-extrabold text-slate-800 tracking-tight">
-                    {photos.length}
-                  </div>
-                  <div className="text-sm text-slate-500">
-                    Tahun: {selectedYear || "-"}
-                  </div>
-                </div>
-              </aside>
-
-              {/* Mobile year chips + total summary */}
-              <div className="md:hidden w-full">
-                <div className="mt-6">
-                  <div className="flex gap-3 overflow-x-auto py-1 px-1">
-                    {loadingYears ? (
-                      <div className="animate-pulse text-slate-400">
-                        Memuat...
-                      </div>
-                    ) : (
-                      years.map((y) => (
-                        <button
-                          key={y}
-                          onClick={() => {
-                            setSelectedYear(y);
-                            setSelectedCategory(null);
-                            setPhotos([]);
-                          }}
-                          className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold shadow transition duration-200 ${
-                            selectedYear === y
-                              ? "bg-indigo-600 text-white ring-2 ring-indigo-400"
-                              : "bg-white text-slate-700 hover:bg-slate-100"
-                          }`}
-                          aria-pressed={selectedYear === y}
-                        >
-                          {y}
-                        </button>
-                      ))
-                    )}
+              <div className="w-full md:w-96">
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                  <div className="text-lg font-semibold mb-4">Pilih Tahun</div>
+                  <div className="flex flex-wrap gap-3">
+                    {loadingYears
+                      ? [...Array(4)].map((_, i) => (
+                          <div
+                            key={i}
+                            className="h-10 w-20 bg-white/20 rounded-lg animate-pulse"
+                          ></div>
+                        ))
+                      : years.slice(0, 6).map((y) => (
+                          <button
+                            key={y}
+                            onClick={() => {
+                              setSelectedYear(y);
+                              setSelectedCategory(null);
+                              setPhotos([]);
+                            }}
+                            className={`px-4 py-2 rounded-lg transition-all ${
+                              selectedYear === y
+                                ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg"
+                                : "bg-white/10 hover:bg-white/20 text-white"
+                            }`}
+                          >
+                            {y}
+                          </button>
+                        ))}
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between bg-white border border-slate-200 rounded-xl p-3 shadow-md">
-                    <div>
-                      <div className="text-xs text-slate-500">Total Foto</div>
-                      <div className="text-lg font-bold">{photos.length}</div>
-                    </div>
-                    <div className="text-sm text-slate-500">
-                      Tahun: {selectedYear || "-"}
+                  <div className="mt-6">
+                    <div className="text-lg font-semibold mb-4">Kategori</div>
+                    <div className="flex flex-wrap gap-3">
+                      {loadingCategories
+                        ? [...Array(3)].map((_, i) => (
+                            <div
+                              key={i}
+                              className="h-10 w-24 bg-white/20 rounded-full animate-pulse"
+                            ></div>
+                          ))
+                        : categories.slice(0, 5).map((c) => (
+                            <button
+                              key={c}
+                              onClick={() => setSelectedCategory(c)}
+                              className={`px-4 py-2 rounded-full text-sm transition-all ${
+                                selectedCategory === c
+                                  ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg"
+                                  : "bg-white/10 hover:bg-white/20 text-white"
+                              }`}
+                            >
+                              {c}
+                            </button>
+                          ))}
                     </div>
                   </div>
                 </div>
@@ -679,94 +706,286 @@ export default function DokumentasiGuest() {
           </div>
         </section>
 
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
-            <div className="w-full md:w-auto">
-              <h2 className="text-lg font-bold text-slate-800">📂 Kategori</h2>
-              <div className="mt-3 flex flex-wrap gap-3">
-                {loadingCategories ? (
-                  <div className="text-slate-400 animate-pulse">
-                    Memuat kategori...
+        {/* Content Section */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1 mt-20 relative z-10">
+          <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
+              <div className="w-full">
+                <div className="flex items-center gap-4 mb-4">
+                  <h2 className="text-2xl font-bold text-slate-800">
+                    Galeri Foto
+                  </h2>
+                  <div className="h-px flex-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-full">
+                    <span className="font-medium text-blue-700">Tahun: </span>
+                    <span className="font-bold">{selectedYear || "-"}</span>
                   </div>
-                ) : (
-                  categories.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => setSelectedCategory(c)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium border transition duration-200 ${
-                        selectedCategory === c
-                          ? "bg-emerald-600 text-white shadow-md transform scale-105"
-                          : "bg-white text-slate-700 hover:bg-slate-100"
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  ))
-                )}
+                  <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-2 rounded-full">
+                    <span className="font-medium text-emerald-700">
+                      Kategori:{" "}
+                    </span>
+                    <span className="font-bold">{selectedCategory || "-"}</span>
+                  </div>
+                  <div className="bg-gradient-to-r from-purple-50 to-violet-50 px-4 py-2 rounded-full">
+                    <span className="font-medium text-purple-700">Total: </span>
+                    <span className="font-bold">{photos.length} Foto</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 bg-slate-50 px-6 py-2.5 rounded-full min-w-[240px]">
+                <div className="text-sm text-slate-600">Menampilkan</div>
+                <div className="text-sm font-semibold text-slate-800">
+                  {visiblePhotos.length}{" "}
+                  <span className="text-slate-500">/</span> {photos.length || 0}
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 mt-2 md:mt-0">
-              <div className="text-sm text-slate-500">Menampilkan</div>
-              <div className="text-sm font-semibold text-slate-700">
-                {visiblePhotos.length} / {photos.length || 0}
+            {/* Galeri */}
+            {loadingPhotos ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
+                {[...Array(12)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="aspect-[4/3] rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : photos.length > 0 ? (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
+                  {visiblePhotos.map((photoSlice, idxSlice) => {
+                    const absoluteIndex = photos.findIndex(
+                      (p) => p.id === photoSlice.id
+                    );
+                    return (
+                      <div
+                        key={photoSlice.id || idxSlice}
+                        className="transform transition-transform hover:-translate-y-1"
+                      >
+                        <ImageItem
+                          originalUrl={photoSlice.thumbnailLink}
+                          index={absoluteIndex}
+                          caption={photoSlice.title || photoSlice.caption}
+                          onOpen={(i) => openLightboxAt(absoluteIndex)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {photos.length > visibleCount && (
+                  <div className="text-center mt-10">
+                    <button
+                      onClick={() => setVisibleCount((p) => p + 24)}
+                      className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] font-medium"
+                    >
+                      <span>Tampilkan Lebih Banyak</span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="py-16 text-center">
+                <div className="mx-auto max-w-md">
+                  <svg
+                    className="mx-auto h-24 w-24 text-slate-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    ></path>
+                  </svg>
+                  <h3 className="mt-5 text-2xl font-bold text-slate-800">
+                    Belum Ada Dokumentasi
+                  </h3>
+                  <p className="mt-3 text-slate-600 max-w-md mx-auto">
+                    Untuk tahun{" "}
+                    <span className="font-medium text-blue-600">
+                      {selectedYear}
+                    </span>{" "}
+                    dan kategori{" "}
+                    <span className="font-medium text-emerald-600">
+                      {selectedCategory}
+                    </span>
+                    , belum ada dokumentasi yang tersedia. Dokumentasi akan
+                    segera diupdate.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Info Section */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="bg-gradient-to-r from-blue-900 to-indigo-800 rounded-3xl p-8 md:p-12 text-white overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full transform -translate-x-1/2 translate-y-1/2"></div>
+
+            <div className="relative z-10">
+              <div className="max-w-3xl">
+                <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                  Kenapa Penting Mendokumentasikan Momen?
+                </h2>
+
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-blue-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">
+                        Merekam Perjalanan
+                      </h3>
+                      <p className="text-blue-100">
+                        Setiap foto adalah saksi bisu perkembangan dan
+                        pertumbuhan RW.09 dari waktu ke waktu.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-emerald-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">
+                        Mempererat Kebersamaan
+                      </h3>
+                      <p className="text-blue-100">
+                        Foto bersama menjadi pengingat akan kebersamaan dan
+                        kehangatan antar warga.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-amber-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">
+                        Arsip Historis
+                      </h3>
+                      <p className="text-blue-100">
+                        Dokumentasi ini menjadi warisan berharga untuk generasi
+                        mendatang di RW.09.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <button className="mt-8 inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-900 rounded-full font-medium hover:bg-blue-50 transition-colors">
+                  <span>Bagikan Momen Anda</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
-
-          {/* Galeri */}
-          {loadingPhotos ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-36 rounded-2xl bg-slate-100 animate-pulse"
-                />
-              ))}
-            </div>
-          ) : photos.length > 0 ? (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                {visiblePhotos.map((photoSlice, idxSlice) => {
-                  const absoluteIndex = photos.findIndex(
-                    (p) => p.id === photoSlice.id
-                  );
-                  return (
-                    <div
-                      key={photoSlice.id || idxSlice}
-                      className="transform transition hover:scale-105"
-                    >
-                      <ImageItem
-                        originalUrl={photoSlice.thumbnailLink}
-                        index={absoluteIndex}
-                        caption={photoSlice.title || photoSlice.caption}
-                        onOpen={() => openLightboxAt(absoluteIndex)}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-
-              {photos.length > visibleCount && (
-                <div className="text-center mt-10">
-                  <button
-                    onClick={() => setVisibleCount((p) => p + 24)}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-indigo-600 to-emerald-500 text-white text-sm font-semibold shadow-lg hover:scale-105 transition"
-                  >
-                    Tampilkan Lebih Banyak
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="py-16 text-center text-slate-500 text-lg">
-              Tidak ada dokumentasi ditemukan untuk{" "}
-              <strong>{selectedCategory}</strong> di{" "}
-              <strong>{selectedYear}</strong>.
-            </div>
-          )}
         </section>
       </main>
+
+      <footer className="bg-slate-900 text-white py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h3 className="text-2xl font-bold mb-4">Ikuti Dokumentasi Kami</h3>
+          <p className="text-slate-400 mb-6">
+            Lihat momen-momen kegiatan warga RW.09 secara langsung melalui
+            Instagram.
+          </p>
+
+          {/* Instagram Button */}
+          <a
+            href="https://www.instagram.com/forumremaja_09"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-pink-600 hover:bg-pink-700 transition-colors text-white font-semibold rounded-full"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+            </svg>
+            @forumremaja_09
+          </a>
+
+          {/* Bottom copyright */}
+          <div className="mt-10 text-sm text-slate-500">
+            © {new Date().getFullYear()} Dokumentasi RW.09 — Semua hak
+            dilindungi.
+          </div>
+        </div>
+      </footer>
 
       {lightboxOpen && (
         <Lightbox
