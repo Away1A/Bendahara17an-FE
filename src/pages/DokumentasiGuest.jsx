@@ -574,24 +574,23 @@ export default function DokumentasiGuest() {
   return (
     <>
       <GuestNavbar />
-      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-800">
+      <main className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-slate-100 text-slate-800 font-[Inter]">
         <section className="relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="flex flex-col md:flex-row items-start gap-6 py-10">
+            <div className="flex flex-col md:flex-row items-start gap-6 py-12">
               <div className="flex-1">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-slate-900 leading-tight drop-shadow">
                   📚 Buku Tahunan RW.09
                 </h1>
-                <p className="mt-3 text-slate-600 max-w-2xl">
+                <p className="mt-4 text-slate-600 text-lg max-w-2xl leading-relaxed">
                   Koleksi momen warga — pilih tahun & kategori. Ketuk atau klik
-                  foto untuk melihat lebih besar.
+                  foto untuk melihat lebih besar. Nikmati perjalanan nostalgia!
                 </p>
               </div>
 
-              {/* Desktop Sidebar */}
-              <aside className="hidden md:flex md:flex-col gap-4 w-72">
-                <div className="bg-white/90 rounded-2xl p-4 shadow">
-                  <div className="text-xs text-slate-500 uppercase font-semibold mb-2">
+              <aside className="hidden md:flex md:flex-col gap-5 w-72">
+                <div className="bg-white/70 backdrop-blur-md border border-slate-200 rounded-2xl p-4 shadow-xl">
+                  <div className="text-xs text-slate-500 uppercase font-semibold mb-2 tracking-wider">
                     Tahun
                   </div>
                   <div className="flex flex-col gap-2 max-h-64 overflow-auto pr-1">
@@ -608,10 +607,10 @@ export default function DokumentasiGuest() {
                             setSelectedCategory(null);
                             setPhotos([]);
                           }}
-                          className={`text-left w-full px-3 py-2 rounded-lg transition ${
+                          className={`text-left w-full px-3 py-2 rounded-lg transition duration-200 ease-in-out font-medium border ${
                             selectedYear === y
-                              ? "bg-indigo-600 text-white shadow-lg"
-                              : "hover:bg-slate-100 bg-white text-slate-700"
+                              ? "bg-indigo-600 text-white shadow-md ring-2 ring-indigo-400"
+                              : "bg-white hover:bg-indigo-50 text-slate-700"
                           }`}
                           aria-pressed={selectedYear === y}
                         >
@@ -622,11 +621,11 @@ export default function DokumentasiGuest() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-white/80 to-slate-50 rounded-2xl p-4 shadow flex flex-col gap-1 items-start">
-                  <div className="text-xs text-slate-500 uppercase font-semibold">
+                <div className="bg-gradient-to-tr from-white via-slate-50 to-slate-100 border border-slate-200 rounded-2xl p-4 shadow-md flex flex-col gap-1 items-start">
+                  <div className="text-xs text-slate-500 uppercase font-semibold tracking-wider">
                     Total Foto
                   </div>
-                  <div className="text-3xl sm:text-4xl font-bold text-slate-800">
+                  <div className="text-4xl font-extrabold text-slate-800 tracking-tight">
                     {photos.length}
                   </div>
                   <div className="text-sm text-slate-500">
@@ -652,9 +651,9 @@ export default function DokumentasiGuest() {
                             setSelectedCategory(null);
                             setPhotos([]);
                           }}
-                          className={`whitespace-nowrap px-3 py-2 rounded-full text-sm font-medium border transition ${
+                          className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold shadow transition duration-200 ${
                             selectedYear === y
-                              ? "bg-indigo-600 text-white"
+                              ? "bg-indigo-600 text-white ring-2 ring-indigo-400"
                               : "bg-white text-slate-700 hover:bg-slate-100"
                           }`}
                           aria-pressed={selectedYear === y}
@@ -665,7 +664,7 @@ export default function DokumentasiGuest() {
                     )}
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between bg-white rounded-xl p-3 shadow">
+                  <div className="mt-4 flex items-center justify-between bg-white border border-slate-200 rounded-xl p-3 shadow-md">
                     <div>
                       <div className="text-xs text-slate-500">Total Foto</div>
                       <div className="text-lg font-bold">{photos.length}</div>
@@ -681,10 +680,9 @@ export default function DokumentasiGuest() {
         </section>
 
         <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-          {/* Kategori + info */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
             <div className="w-full md:w-auto">
-              <h2 className="text-lg font-semibold">Kategori</h2>
+              <h2 className="text-lg font-bold text-slate-800">📂 Kategori</h2>
               <div className="mt-3 flex flex-wrap gap-3">
                 {loadingCategories ? (
                   <div className="text-slate-400 animate-pulse">
@@ -695,9 +693,9 @@ export default function DokumentasiGuest() {
                     <button
                       key={c}
                       onClick={() => setSelectedCategory(c)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium border transition ${
+                      className={`px-4 py-2 rounded-full text-sm font-medium border transition duration-200 ${
                         selectedCategory === c
-                          ? "bg-emerald-600 text-white shadow-lg transform scale-105"
+                          ? "bg-emerald-600 text-white shadow-md transform scale-105"
                           : "bg-white text-slate-700 hover:bg-slate-100"
                       }`}
                     >
@@ -708,9 +706,9 @@ export default function DokumentasiGuest() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mt-2 md:mt-0">
               <div className="text-sm text-slate-500">Menampilkan</div>
-              <div className="text-sm font-semibold">
+              <div className="text-sm font-semibold text-slate-700">
                 {visiblePhotos.length} / {photos.length || 0}
               </div>
             </div>
@@ -730,17 +728,19 @@ export default function DokumentasiGuest() {
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                 {visiblePhotos.map((photoSlice, idxSlice) => {
-                  // compute absolute index in photos array
                   const absoluteIndex = photos.findIndex(
                     (p) => p.id === photoSlice.id
                   );
                   return (
-                    <div key={photoSlice.id || idxSlice}>
+                    <div
+                      key={photoSlice.id || idxSlice}
+                      className="transform transition hover:scale-105"
+                    >
                       <ImageItem
                         originalUrl={photoSlice.thumbnailLink}
                         index={absoluteIndex}
                         caption={photoSlice.title || photoSlice.caption}
-                        onOpen={(i) => openLightboxAt(absoluteIndex)}
+                        onOpen={() => openLightboxAt(absoluteIndex)}
                       />
                     </div>
                   );
@@ -748,10 +748,10 @@ export default function DokumentasiGuest() {
               </div>
 
               {photos.length > visibleCount && (
-                <div className="text-center mt-8">
+                <div className="text-center mt-10">
                   <button
                     onClick={() => setVisibleCount((p) => p + 24)}
-                    className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-emerald-500 text-white shadow-lg hover:scale-105 transition"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-indigo-600 to-emerald-500 text-white text-sm font-semibold shadow-lg hover:scale-105 transition"
                   >
                     Tampilkan Lebih Banyak
                   </button>
@@ -759,7 +759,7 @@ export default function DokumentasiGuest() {
               )}
             </>
           ) : (
-            <div className="py-12 text-center text-slate-500">
+            <div className="py-16 text-center text-slate-500 text-lg">
               Tidak ada dokumentasi ditemukan untuk{" "}
               <strong>{selectedCategory}</strong> di{" "}
               <strong>{selectedYear}</strong>.

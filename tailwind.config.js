@@ -9,6 +9,7 @@ export const theme = {
   extend: {
     fontFamily: {
       sans: ['Poppins', 'sans-serif'],
+      inter: ['Inter', 'sans-serif'],
     },
     // Tambahan opsional (jika kamu mau animasi lebih banyak atau warna custom)
     // colors: {
