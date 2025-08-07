@@ -605,101 +605,133 @@ export default function DokumentasiGuest() {
 
       <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
         {/* Hero Section */}
-        <section className="relative overflow-hidden pt-16 pb-20 md:pb-28 bg-gradient-to-r from-blue-900 to-indigo-800 text-white">
-          <div className="absolute inset-0 z-0">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/20 to-black/50"></div>
-            <div className="absolute inset-0 bg-cover bg-center opacity-20"></div>
+        <section className="relative overflow-hidden py-24 bg-gradient-to-br from-indigo-900 via-blue-900 to-indigo-800 text-white">
+          {/* Decorative Floating Orbs */}
+          <div className="absolute top-[-100px] left-[-80px] w-[300px] h-[300px] bg-blue-500 rounded-full opacity-30 blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-[-120px] right-[-100px] w-[300px] h-[300px] bg-indigo-400 rounded-full opacity-30 blur-3xl animate-pulse"></div>
+
+          {/* Subtle Grid Overlay */}
+          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-repeat opacity-5 pointer-events-none z-0"></div>
+
+          {/* Scroll Indicator */}
+          <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
+            <svg
+              className="w-6 h-6 text-white opacity-70"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
           </div>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-8">
-            <div className="flex flex-col md:flex-row items-center gap-8">
-              <div className="flex-1">
-                <div className="inline-block bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm mb-4">
-                  <span className="text-blue-300">📸 Galeri Digital RW.09</span>
-                </div>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold max-w-2xl leading-tight">
-                  Mengabadikan Momen{" "}
-                  <span className="text-blue-300">Bersama</span> Warga
-                </h1>
-                <p className="mt-6 text-lg text-blue-100 max-w-2xl leading-relaxed">
-                  Jelajahi koleksi dokumentasi perjalanan RW.09 dari tahun ke
-                  tahun. Setiap foto adalah cerita, setiap momen adalah kenangan
-                  yang tak terlupakan.
-                </p>
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10 grid md:grid-cols-2 gap-12 items-center animate-fade-in">
+            {/* Left Content */}
+            <div>
+              <div className="inline-block bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm mb-4 shadow">
+                <span className="text-blue-300">📸 Galeri Digital RW.09</span>
+              </div>
+              <h1 className="text-5xl lg:text-6xl font-bold leading-tight tracking-tight drop-shadow">
+                Mengabadikan Momen{" "}
+                <span className="text-blue-300">Bersama</span> Warga
+              </h1>
+              <p className="mt-6 text-lg text-blue-100 max-w-xl leading-relaxed">
+                Jelajahi koleksi dokumentasi perjalanan RW.09 dari tahun ke
+                tahun. Setiap foto adalah cerita, setiap momen adalah kenangan
+                yang tak terlupakan.
+              </p>
+              <p className="mt-2 text-sm italic text-blue-200">
+                "Karena setiap tawa dan kebersamaan layak dikenang."
+              </p>
 
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
-                    <div className="text-blue-200 text-sm">Total Tahun</div>
-                    <div className="text-xl font-bold">{years.length}</div>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
-                    <div className="text-blue-200 text-sm">Total Foto</div>
-                    <div className="text-xl font-bold">{photos.length}</div>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
-                    <div className="text-blue-200 text-sm">Tahun Aktif</div>
-                    <div className="text-xl font-bold">
-                      {selectedYear || "-"}
+              {/* Stats */}
+              <div className="mt-10 flex flex-wrap gap-4">
+                {[
+                  { label: "Total Tahun", value: years.length },
+                  { label: "Total Foto", value: photos.length },
+                  { label: "Tahun Aktif", value: selectedYear || "-" },
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className="bg-white/10 backdrop-blur-lg px-6 py-4 rounded-xl shadow-md hover:shadow-blue-500/20 transition-all"
+                  >
+                    <div className="text-blue-200 text-sm">{item.label}</div>
+                    <div className="text-2xl font-bold text-white">
+                      {item.value}
                     </div>
                   </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Card Filter */}
+            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 border border-white/20 shadow-xl hover:shadow-indigo-500/20 transition-all">
+              <div>
+                <div className="text-xl font-semibold mb-4">🎯 Pilih Tahun</div>
+                <div className="flex flex-wrap gap-3 mb-6">
+                  {loadingYears
+                    ? [...Array(4)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="h-10 w-20 bg-white/20 rounded-lg animate-pulse"
+                        ></div>
+                      ))
+                    : years.slice(0, 6).map((y) => (
+                        <button
+                          key={y}
+                          onClick={() => {
+                            setSelectedYear(y);
+                            setSelectedCategory(null);
+                            setPhotos([]);
+                          }}
+                          className={`relative group overflow-hidden px-4 py-2 rounded-lg text-sm font-medium transition-all 
+                    ${
+                      selectedYear === y
+                        ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg scale-105"
+                        : "bg-white/10 hover:bg-white/20 text-white hover:scale-105"
+                    }`}
+                        >
+                          <span className="absolute inset-0 rounded-lg border border-blue-400 opacity-0 group-hover:opacity-100 blur-md transition duration-300"></span>
+                          <span className="relative z-10 flex items-center gap-1">
+                            📅 {y}
+                          </span>
+                        </button>
+                      ))}
                 </div>
               </div>
 
-              <div className="w-full md:w-96">
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                  <div className="text-lg font-semibold mb-4">Pilih Tahun</div>
-                  <div className="flex flex-wrap gap-3">
-                    {loadingYears
-                      ? [...Array(4)].map((_, i) => (
-                          <div
-                            key={i}
-                            className="h-10 w-20 bg-white/20 rounded-lg animate-pulse"
-                          ></div>
-                        ))
-                      : years.slice(0, 6).map((y) => (
-                          <button
-                            key={y}
-                            onClick={() => {
-                              setSelectedYear(y);
-                              setSelectedCategory(null);
-                              setPhotos([]);
-                            }}
-                            className={`px-4 py-2 rounded-lg transition-all ${
-                              selectedYear === y
-                                ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg"
-                                : "bg-white/10 hover:bg-white/20 text-white"
-                            }`}
-                          >
-                            {y}
-                          </button>
-                        ))}
-                  </div>
-
-                  <div className="mt-6">
-                    <div className="text-lg font-semibold mb-4">Kategori</div>
-                    <div className="flex flex-wrap gap-3">
-                      {loadingCategories
-                        ? [...Array(3)].map((_, i) => (
-                            <div
-                              key={i}
-                              className="h-10 w-24 bg-white/20 rounded-full animate-pulse"
-                            ></div>
-                          ))
-                        : categories.slice(0, 5).map((c) => (
-                            <button
-                              key={c}
-                              onClick={() => setSelectedCategory(c)}
-                              className={`px-4 py-2 rounded-full text-sm transition-all ${
-                                selectedCategory === c
-                                  ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg"
-                                  : "bg-white/10 hover:bg-white/20 text-white"
-                              }`}
-                            >
-                              {c}
-                            </button>
-                          ))}
-                    </div>
-                  </div>
+              <div>
+                <div className="text-xl font-semibold mb-4">📂 Kategori</div>
+                <div className="flex flex-wrap gap-3">
+                  {loadingCategories
+                    ? [...Array(3)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="h-10 w-24 bg-white/20 rounded-full animate-pulse"
+                        ></div>
+                      ))
+                    : categories.slice(0, 5).map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => setSelectedCategory(c)}
+                          className={`relative group px-4 py-2 rounded-full text-sm font-medium transition-all 
+                    ${
+                      selectedCategory === c
+                        ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg scale-105"
+                        : "bg-white/10 hover:bg-white/20 text-white hover:scale-105"
+                    }`}
+                        >
+                          <span className="absolute inset-0 rounded-full border border-emerald-300 opacity-0 group-hover:opacity-100 blur-md transition duration-300"></span>
+                          <span className="relative z-10 flex items-center gap-1">
+                            🏷️ {c}
+                          </span>
+                        </button>
+                      ))}
                 </div>
               </div>
             </div>
