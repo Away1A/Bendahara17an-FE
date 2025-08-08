@@ -165,7 +165,7 @@ export default function LaporanGuest() {
           </div>
 
           {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 px-4 md:px-6">
             <StatBox
               title="Total Pemasukan"
               value={summary.total_pemasukan}
@@ -237,18 +237,25 @@ export default function LaporanGuest() {
 }
 
 // Improved StatBox Component
-function StatBox({ title, value, color, icon }) {
+function StatBox({ title, value, color = "blue", icon }) {
   const colors = {
     green: {
       bg: "bg-green-50",
       text: "text-green-700",
       border: "border-green-200",
+      iconBg: "bg-green-100",
     },
-    red: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
+    red: {
+      bg: "bg-red-50",
+      text: "text-red-700",
+      border: "border-red-200",
+      iconBg: "bg-red-100",
+    },
     blue: {
       bg: "bg-blue-50",
       text: "text-blue-700",
       border: "border-blue-200",
+      iconBg: "bg-blue-100",
     },
   };
 
@@ -256,16 +263,23 @@ function StatBox({ title, value, color, icon }) {
 
   return (
     <div
-      className={`border rounded-xl p-5 ${selectedColor.bg} ${selectedColor.border} transition-all hover:shadow-md`}
+      className={`border rounded-xl p-5 ${selectedColor.bg} ${selectedColor.border} transition-shadow duration-300 hover:shadow-md`}
+      role="region"
+      aria-label={`${title} statistic`}
     >
-      <div className="flex justify-between items-start">
+      <div className="flex justify-between items-center">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
           <p className={`text-2xl font-bold mt-1 ${selectedColor.text}`}>
-            Rp {value?.toLocaleString("id-ID") || "0"}
+            Rp {value?.toLocaleString("id-ID") ?? "0"}
           </p>
         </div>
-        <div className={`p-2 rounded-lg ${selectedColor.bg}`}>{icon}</div>
+        <div
+          className={`p-2 rounded-lg ${selectedColor.iconBg} flex items-center justify-center`}
+          aria-hidden="true"
+        >
+          {icon}
+        </div>
       </div>
     </div>
   );

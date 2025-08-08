@@ -50,7 +50,7 @@ export default function Login() {
   };
 
   const handleGuestAccess = () => {
-    navigate("/laporan/guest");
+    navigate("/acara/guest");
   };
 
   const handleForgotPassword = () => {
