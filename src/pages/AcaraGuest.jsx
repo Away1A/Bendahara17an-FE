@@ -17,6 +17,8 @@ export default function AcaraGuestModern() {
     "/poster4.jpg",
     "/poster5.jpg",
     "/poster6.jpg",
+    "/poster7.jpg",
+    "/poster8.jpg",
   ];
 
   useEffect(() => {
