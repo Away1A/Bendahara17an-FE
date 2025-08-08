@@ -82,61 +82,84 @@ export default function LaporanGuest() {
   return (
     <>
       <GuestNavbar />
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+        <div>
           {/* Header Section */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <FiPieChart className="mr-3 text-blue-600" />
-                Laporan Keuangan
-              </h1>
-              <p className="text-gray-600 mt-1">Forum Remaja RW 09</p>
+          <section className="relative overflow-hidden pt-16 pb-20 md:pb-28 bg-gradient-to-r from-blue-900 to-indigo-800 text-white">
+            {/* Overlay gelap */}
+            <div className="absolute inset-0 z-0">
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/20 to-black/50"></div>
+              <div className="absolute inset-0 bg-cover bg-center opacity-10"></div>
             </div>
-          </div>
+
+            {/* Konten tengah */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+              {/* Label kecil */}
+              <div className="inline-block bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm mb-4">
+                <span className="text-yellow-200 flex items-center gap-2">
+                  <FiPieChart className="text-yellow-200" /> Laporan Keuangan
+                </span>
+              </div>
+
+              {/* Judul */}
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight max-w-3xl mx-auto">
+                Transparansi <span className="text-yellow-200">Keuangan</span>{" "}
+                Forum Remaja RW.09
+              </h1>
+
+              {/* Deskripsi */}
+              <p className="mt-6 text-lg text-blue-100 max-w-2xl mx-auto leading-relaxed">
+                Lihat detail pemasukan, pengeluaran, dan saldo terkini yang
+                dikelola oleh Forum Remaja RW.09.
+              </p>
+            </div>
+          </section>
 
           {/* Filters & Actions */}
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-10 border border-gray-100">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+              {/* Dari Tanggal */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Dari Tanggal
                 </label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-sm"
                 />
               </div>
-              <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+
+              {/* Sampai Tanggal */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Sampai Tanggal
                 </label>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-sm"
                 />
               </div>
-              <div className="flex flex-col justify-end">
-                <div className="flex gap-3">
-                  <button
-                    onClick={downloadPdf}
-                    className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-md"
-                  >
-                    <FiDownload />
-                    PDF
-                  </button>
-                  <button
-                    onClick={downloadExcel}
-                    className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-md"
-                  >
-                    <FiDownload />
-                    Excel
-                  </button>
-                </div>
+
+              {/* Tombol Aksi */}
+              <div className="flex gap-3">
+                <button
+                  onClick={downloadPdf}
+                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
+                >
+                  <FiDownload className="text-lg" />
+                  PDF
+                </button>
+                <button
+                  onClick={downloadExcel}
+                  className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
+                >
+                  <FiDownload className="text-lg" />
+                  Excel
+                </button>
               </div>
             </div>
           </div>

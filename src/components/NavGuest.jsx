@@ -33,35 +33,32 @@ export default function GuestNavbar() {
   );
 
   return (
-    <nav className="bg-slate-900 shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link
-          to="/"
-          className="flex items-center gap-2 text-xl font-semibold text-white tracking-tight"
-        >
-          <img
-            src="/PNG WHITE.png"
-            alt="Forum Remaja Logo"
-            className="w-10 h-10 object-contain"
-          />
-          Forum Remaja
-        </Link>
+    <nav className="bg-slate-900 shadow-md sticky top-0 z-50 full-bleed">
+      <div className="w-full px-6 py-3 flex items-center justify-between">
+        {/* Kiri - Logo */}
+        <div className="flex items-center">
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-xl font-semibold text-white tracking-tight"
+          >
+            <img
+              src="/PNG WHITE.png"
+              alt="Forum Remaja Logo"
+              className="w-10 h-10 object-contain"
+            />
+            Forum Remaja
+          </Link>
+        </div>
 
-        {/* Mobile Toggle */}
-        <button
-          onClick={toggleMenu}
-          className="md:hidden p-2 text-slate-200 rounded-lg hover:bg-slate-800 transition"
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-
-        {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-6">
-          {navItem("/laporan/guest", "Keuangan")}
+        {/* Tengah - Menu (hidden di mobile) */}
+        <div className="hidden md:flex items-center gap-6 flex-1 justify-center">
           {navItem("/acara/guest", "Acara")}
           {navItem("/dokumentasi/guest", "Dokumentasi")}
+          {navItem("/laporan/guest", "Keuangan")}
+        </div>
 
-          {/* Dropdown */}
+        {/* Kanan - Account */}
+        <div className="hidden md:flex items-center gap-4">
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={toggleDropdown}
@@ -88,15 +85,23 @@ export default function GuestNavbar() {
             )}
           </div>
         </div>
+
+        {/* Mobile Toggle */}
+        <button
+          onClick={toggleMenu}
+          className="md:hidden p-2 text-slate-200 rounded-lg hover:bg-slate-800 transition"
+        >
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-slate-800 border-t border-slate-700">
           <div className="px-4 py-3 flex flex-col gap-2 text-slate-100">
-            {navItem("/laporan/guest", "Keuangan")}
             {navItem("/acara/guest", "Acara")}
             {navItem("/dokumentasi/guest", "Dokumentasi")}
+            {navItem("/laporan/guest", "Keuangan")}
             <button
               onClick={handleLogin}
               className="flex items-center gap-2 px-4 py-2 mt-2 bg-slate-700 hover:bg-slate-600 rounded-md transition text-sm"

@@ -37,68 +37,93 @@ export default function AcaraGuestModern() {
   return (
     <>
       <GuestNavbar />
-      <main className="max-w-screen-xl mx-auto px-6 py-12 space-y-16 font-sans">
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
         {/* Hero */}
-        <section className="text-center space-y-4">
-          <h1 className="text-5xl font-extrabold text-blue-800 drop-shadow-sm">
-            🎉 Agenda Kegiatan RW.09
-          </h1>
-          <p className="text-lg text-gray-600 max-w-xl mx-auto">
-            Jadwal lengkap lomba, lokasi acara, pendaftaran, hingga dokumentasi
-            dan tutorial.
-          </p>
+        <section className="relative overflow-hidden pt-16 pb-20 md:pb-28 bg-gradient-to-r from-blue-900 to-indigo-800 text-white">
+          {/* Overlay gelap */}
+          <div className="absolute inset-0 z-0">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/20 to-black/50"></div>
+            <div className="absolute inset-0 bg-cover bg-center opacity-10"></div>
+          </div>
+
+          {/* Konten tengah */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <div className="inline-block bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm mb-4">
+              <span className="text-yellow-200">🎉 Agenda Kegiatan RW.09</span>
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight max-w-3xl mx-auto">
+              Jadwal & Acara Spesial{" "}
+              <span className="text-yellow-200">Bersama Warga</span>
+            </h1>
+
+            <p className="mt-6 text-lg text-pink-100 max-w-2xl mx-auto leading-relaxed">
+              Jadwal lengkap lomba, lokasi acara, pendaftaran, hingga
+              dokumentasi dan tutorial.
+            </p>
+          </div>
         </section>
 
-        <section className="bg-white border border-gray-100 shadow-xl rounded-3xl px-10 py-14 space-y-14">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center gap-4">
-            <CalendarDays className="w-10 h-10 text-blue-600 bg-blue-100 p-2 rounded-xl shadow-sm" />
-            Informasi Acara
-          </h2>
+        <section className="bg-white border border-gray-100 shadow-xl rounded-3xl px-8 py-12 md:px-12 md:py-16 space-y-12">
+          {/* Judul */}
+          <header className="space-y-2 text-center md:text-left">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-blue-50 text-blue-700 rounded-full shadow-sm">
+              <CalendarDays className="w-6 h-6" />
+              <span className="font-semibold">Informasi Acara</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800">
+              Jadwal & Detail Kegiatan
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl">
+              Semua informasi penting mengenai acara RW.09 dalam satu tempat.
+            </p>
+          </header>
 
+          {/* Grid Konten */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-gray-700 text-[17px] leading-relaxed">
-            {/* Kiri */}
-            <div className="space-y-10">
+            {/* Kolom Kiri */}
+            <div className="space-y-8">
               {/* Jadwal */}
-              <div className="space-y-2">
-                <h3 className="font-semibold text-blue-700 text-lg">
+              <div className="bg-gray-50 rounded-2xl p-6 shadow-sm">
+                <h3 className="font-semibold text-blue-700 text-lg mb-3">
                   📅 Jadwal Acara
                 </h3>
-                <ul className="list-disc list-inside ml-4 space-y-1">
+                <ul className="list-disc list-inside space-y-1">
                   <li>Lomba Porga: 2, 3, 9, 10 Agustus 2025</li>
                   <li>Lomba Senam: 9, 10 Agustus 2025</li>
                   <li>Lomba Gaple: Mulai 1 Agustus 2025</li>
                   <li>Lomba Tenis Meja: 9, 10, 16 Agustus 2025</li>
                   <li>Lomba 17an: 17 Agustus 2025</li>
                   <li>Lomba Adzan, Kaligrafi & Pengajian: 16 Agustus 2025</li>
-                  <li>Malam Puncak: 27 September 2025</li>
+                  <li>Malam Puncak: 20 September 2025</li>
                 </ul>
               </div>
 
               {/* Tema */}
-              <div>
-                <h3 className="font-semibold text-blue-700 text-lg">
+              <div className="bg-gray-50 rounded-2xl p-6 shadow-sm">
+                <h3 className="font-semibold text-blue-700 text-lg mb-2">
                   🎯 Tema Acara
                 </h3>
-                <p className="text-gray-800 mt-1 italic">"Flora dan Fauna"</p>
+                <p className="italic text-gray-800">"Flora dan Fauna"</p>
               </div>
 
               {/* Peserta */}
-              <div>
-                <h3 className="font-semibold text-blue-700 text-lg">
+              <div className="bg-gray-50 rounded-2xl p-6 shadow-sm">
+                <h3 className="font-semibold text-blue-700 text-lg mb-2">
                   👨‍👩‍👧‍👦 Peserta
                 </h3>
-                <p className="text-gray-800 mt-1">
+                <p className="text-gray-800">
                   Seluruh Warga Cluster Palem RW.09
                 </p>
               </div>
 
               {/* Rundown */}
-              <div className="pt-4 border-t border-gray-200">
-                <h3 className="font-semibold text-blue-700 flex items-center gap-2">
+              <div className="bg-blue-50 rounded-2xl p-6 shadow-sm">
+                <h3 className="font-semibold text-blue-700 flex items-center gap-2 mb-2">
                   <BadgeCheck className="w-5 h-5 text-blue-600" />
                   Rundown Acara
                 </h3>
-                <p className="text-sm text-gray-600 mt-1 mb-3">
+                <p className="text-sm text-gray-600 mb-4">
                   Unduh jadwal resmi seluruh rangkaian kegiatan lomba:
                 </p>
                 <a
@@ -111,14 +136,14 @@ export default function AcaraGuestModern() {
               </div>
             </div>
 
-            {/* Kanan */}
+            {/* Kolom Kanan */}
             <div className="space-y-8">
               {/* Lokasi */}
-              <div>
-                <h3 className="font-semibold text-blue-700 text-lg">
+              <div className="bg-gray-50 rounded-2xl p-6 shadow-sm">
+                <h3 className="font-semibold text-blue-700 text-lg mb-2">
                   📍 Lokasi Acara
                 </h3>
-                <p className="text-gray-800 mt-1">
+                <p className="text-gray-800">
                   Lapang Palem & Masjid Al-Ukhuwah
                 </p>
               </div>
