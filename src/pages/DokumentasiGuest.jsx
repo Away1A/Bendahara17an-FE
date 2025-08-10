@@ -656,7 +656,7 @@ export default function DokumentasiGuest() {
                             className="h-10 w-20 bg-white/20 rounded-lg animate-pulse"
                           ></div>
                         ))
-                      : years.slice(0, 6).map((y) => (
+                      : years.map((y) => (
                           <button
                             key={y}
                             onClick={() => {
@@ -685,7 +685,7 @@ export default function DokumentasiGuest() {
                               className="h-10 w-24 bg-white/20 rounded-full animate-pulse"
                             ></div>
                           ))
-                        : categories.slice(0, 5).map((c) => (
+                        : categories.map((c) => (
                             <button
                               key={c}
                               onClick={() => setSelectedCategory(c)}
