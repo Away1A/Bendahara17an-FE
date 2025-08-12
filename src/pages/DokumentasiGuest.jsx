@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo, memo, useRef, useCallback } from "react";
 import GuestNavbar from "../components/NavGuest";
 import api from "../api";
 
-const BASE_URL = "https://tarka.ngrok.app";
+const BASE_URL = "https://tarka.ngrok.app/forum-remaja";
 
 function getImageUrl(originalUrl) {
   if (!originalUrl) return "";
