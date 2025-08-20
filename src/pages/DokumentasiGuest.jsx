@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable no-unused-vars */
 import { useEffect, useState, useMemo, memo, useRef, useCallback } from "react";
 import GuestNavbar from "../components/NavGuest";
@@ -247,6 +248,7 @@ function Lightbox({ photos, startIndex, onClose }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [displaySrc, setDisplaySrc] = useState(null);
+  const [downloading, setDownloading] = useState(false);
   const activeRef = useRef({ cancelled: false });
 
   useEffect(() => {
@@ -293,7 +295,7 @@ function Lightbox({ photos, startIndex, onClose }) {
               clearTimeout(to);
               resolve();
             };
-            img.onerror = (ev) => {
+            img.onerror = () => {
               clearTimeout(to);
               reject(new Error("error loading"));
             };
@@ -347,6 +349,54 @@ function Lightbox({ photos, startIndex, onClose }) {
   const photo = photos[index];
   const safeAlt = photo.caption || photo.title || `Foto ${index + 1}`;
 
+  // ---------------- Handle Download ----------------
+  async function handleDownload(useOriginal = false) {
+    const src = useOriginal
+      ? getImageUrl(photo.full || photo.thumbnailLink)
+      : displaySrc || getImageUrl(photo.full || photo.thumbnailLink);
+
+    if (!src) return;
+
+    setDownloading(true);
+
+    try {
+      const res = await fetch(src, { mode: "cors" });
+      if (!res.ok) throw new Error("Gagal mengambil gambar");
+
+      const blob = await res.blob();
+
+      // derive extension
+      const mime = blob.type || "";
+      let ext = "jpg";
+      if (mime.includes("png")) ext = "png";
+      else if (mime.includes("gif")) ext = "gif";
+      else if (mime.includes("webp")) ext = "webp";
+      else if (mime.includes("svg")) ext = "svg";
+
+      // safe filename
+      const baseName =
+        (photo && (photo.title || photo.caption)) || `photo_${index + 1}`;
+      const safeBase = baseName.replace(/[\/\\?%*:|"<>]/g, "-");
+
+      const filename = `${safeBase}.${ext}`;
+
+      // create blob url & download
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.warn("Download gagal, buka tab baru:", err);
+      window.open(src, "_blank", "noopener,noreferrer");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 sm:p-6 backdrop-blur-md"
@@ -379,18 +429,6 @@ function Lightbox({ photos, startIndex, onClose }) {
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
               >
                 <span>Buka gambar di tab baru</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"
-                    clipRule="evenodd"
-                  />
-                </svg>
               </a>
             </div>
           </div>
@@ -408,7 +446,7 @@ function Lightbox({ photos, startIndex, onClose }) {
               height: "auto",
             }}
             draggable={false}
-            onError={(e) => {
+            onError={() => {
               setDisplaySrc(
                 buildResponsiveUrl(photo.full || photo.thumbnailLink, 480)
               );
@@ -416,6 +454,7 @@ function Lightbox({ photos, startIndex, onClose }) {
           />
         )}
 
+        {/* Tombol Close */}
         <button
           onClick={onClose}
           className="absolute top-6 right-6 bg-white/10 hover:bg-white/20 p-2.5 rounded-full shadow backdrop-blur-lg transition-colors"
@@ -437,6 +476,71 @@ function Lightbox({ photos, startIndex, onClose }) {
           </svg>
         </button>
 
+        {/* Tombol Download */}
+        {displaySrc && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDownload(false);
+            }}
+            disabled={downloading}
+            aria-label="Unduh gambar"
+            title="Unduh gambar"
+            className={
+              "absolute top-6 right-16 flex items-center gap-3 px-3 py-2 rounded-lg shadow-lg backdrop-blur-md " +
+              "bg-white/7 hover:bg-white/20 hover:scale-[1.03] transform transition-all duration-150 " +
+              "focus:outline-none focus:ring-2 focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            }
+          >
+            {/* icon / spinner */}
+            {downloading ? (
+              <span className="inline-flex items-center justify-center h-5 w-5">
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeOpacity="0.25"
+                  />
+                  <path
+                    d="M22 12a10 10 0 00-10-10"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
+                />
+              </svg>
+            )}
+
+            {/* teks (muncul halus saat hover) */}
+            <span className="hidden sm:inline-block text-sm font-medium text-white/95 opacity-0 hover:opacity-100 transition-opacity duration-150">
+              {downloading ? "Mengunduh..." : "Unduh"}
+            </span>
+          </button>
+        )}
+
+        {/* Navigasi kiri */}
         <div className="absolute left-6 top-1/2 -translate-y-1/2">
           <button
             onClick={(e) => {
@@ -460,6 +564,8 @@ function Lightbox({ photos, startIndex, onClose }) {
             </svg>
           </button>
         </div>
+
+        {/* Navigasi kanan */}
         <div className="absolute right-6 top-1/2 -translate-y-1/2">
           <button
             onClick={(e) => {
@@ -484,6 +590,7 @@ function Lightbox({ photos, startIndex, onClose }) {
           </button>
         </div>
 
+        {/* Caption */}
         <div className="mt-3 flex items-center justify-between px-1 absolute bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-3rem)] max-w-2xl bg-black/50 backdrop-blur-sm rounded-xl py-3 px-4">
           <div className="text-white">
             <div className="font-semibold text-lg">
@@ -493,7 +600,30 @@ function Lightbox({ photos, startIndex, onClose }) {
               {photo.year || ""} • {photo.category || ""}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <div
+              className="text-white/90 hover:text-white cursor-pointer flex items-center gap-1 px-3 py-1 bg-white/10 rounded-lg text-sm transition"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDownload(false);
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
+                />
+              </svg>
+              Download
+            </div>
             <div className="text-sm text-white/80">
               {index + 1} / {photos.length}
             </div>
