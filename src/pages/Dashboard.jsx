@@ -98,6 +98,8 @@ export default function Dashboard() {
         <Table
           data={pemasukan}
           columns={["tanggal", "sumber", "kategori", "jumlah", "keterangan"]}
+          type="pemasukan"
+          onReload={fetchSummary}
         />
       </div>
 
@@ -109,6 +111,8 @@ export default function Dashboard() {
         <Table
           data={pengeluaran}
           columns={["tanggal", "keperluan", "kategori", "jumlah", "keterangan"]}
+          type="pengeluaran"
+          onReload={fetchSummary}
         />
       </div>
     </div>
