@@ -26,7 +26,7 @@ export default function App() {
         {/* Tampilkan Navbar hanya jika sudah login */}
         {auth.token && <Navbar />}
 
-        <main className={`${auth.token ? "max-w-6xl mx-auto" : ""}`}>
+        <main className={`${auth.token ? "min-h-screen" : ""}`}>
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />

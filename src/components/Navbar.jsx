@@ -57,21 +57,25 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // ganti bagian <nav> ... </nav> kamu dengan ini (tidak mengubah logic)
   return (
-    <nav className="bg-gradient-to-r from-red-500 via-pink-500 to-orange-400 text-white px-6 py-4 shadow-lg sticky top-0 z-50 backdrop-blur-md">
-      <div className="flex items-center justify-between max-w-7xl mx-auto">
+    <nav className="bg-gradient-to-r from-red-500 via-pink-500 to-orange-400 text-white py-4 shadow-lg sticky top-0 z-50 backdrop-blur-md">
+      {/* use full-width inner wrapper (no max-w, no mx-auto) */}
+      <div className="w-full px-6 flex items-center justify-between">
         {/* Brand */}
         <Link
           to="/"
           className="text-2xl font-extrabold tracking-wide flex items-center gap-2"
         >
-          <span>💰</span> <span>FORUM REMAJA</span>
+          <span>💰</span>
+          <span className="hidden sm:inline">FORUM REMAJA</span>
         </Link>
 
         {/* Mobile Button */}
         <button
           onClick={toggleMenu}
           className="md:hidden p-2 rounded-lg bg-white/20 hover:bg-white/30 transition"
+          aria-label="Toggle menu"
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -99,13 +103,15 @@ export default function Navbar() {
             <button
               onClick={toggleDropdown}
               className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-full transition text-sm font-semibold"
+              aria-haspopup="true"
+              aria-expanded={showDropdown}
             >
               <img
                 src={`https://ui-avatars.com/api/?name=${name}&background=ffffff&color=ff0000&size=32`}
                 alt="avatar"
                 className="w-8 h-8 rounded-full object-cover"
               />
-              <span>
+              <span className="hidden lg:inline">
                 {name} ({roleFormatted})
               </span>
               <ChevronDown size={16} />
@@ -127,7 +133,7 @@ export default function Navbar() {
 
       {/* Mobile Dropdown */}
       {isOpen && (
-        <div className="md:hidden flex flex-col mt-4 gap-2 bg-white/10 rounded-xl p-4 text-sm font-semibold">
+        <div className="md:hidden flex flex-col mt-4 gap-2 bg-white/10 rounded-xl p-4 text-sm font-semibold px-6">
           {navItem("/", "Dashboard")}
           {isAdmin && navItem("/pemasukan", "Pemasukan")}
           {isAdmin && navItem("/pengeluaran", "Pengeluaran")}
