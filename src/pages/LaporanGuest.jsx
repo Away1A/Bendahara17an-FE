@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import GuestNavbar from "../components/NavGuest";
 import api from "../api";
@@ -15,13 +16,14 @@ import {
 import { Bar, Line } from "react-chartjs-2";
 import {
   FiDownload,
-  FiLock,
+  FiPieChart,
   FiTrendingUp,
   FiTrendingDown,
   FiDollarSign,
-  FiPieChart,
   FiBarChart2,
 } from "react-icons/fi";
+
+import LiveModal from "../components/LiveModal";
 
 ChartJS.register(
   BarElement,
@@ -42,11 +44,14 @@ export default function LaporanGuest() {
     rekap_pengeluaran: [],
   });
   const [summary, setSummary] = useState({});
-  const [saldoTotal, setSaldoTotal] = useState(0); // ✅ tambahkan state saldo total
+  const [saldoTotal, setSaldoTotal] = useState(0);
 
   const [startDate, setStartDate] = useState(getToday());
   const [endDate, setEndDate] = useState(getToday());
   const [loading, setLoading] = useState(true);
+
+  // state popup live report
+  const [liveOpen, setLiveOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -59,12 +64,12 @@ export default function LaporanGuest() {
     Promise.all([
       api.get("/laporan/rekap", { params }),
       api.get("/laporan/summary", { params }),
-      api.get("/laporan/saldo"), // ✅ ambil saldo total
+      api.get("/laporan/saldo"),
     ])
       .then(([rekapRes, summaryRes, saldoRes]) => {
         setRekap(rekapRes.data);
         setSummary(summaryRes.data);
-        setSaldoTotal(saldoRes.data.saldo); // ✅ simpan saldo total
+        setSaldoTotal(saldoRes.data.saldo);
       })
       .finally(() => setLoading(false));
   };
@@ -113,22 +118,122 @@ export default function LaporanGuest() {
                 dikelola oleh Forum Remaja RW.09.
               </p>
             </div>
+            {/* Live Report Section */}
+            <section className="relative w-full py-10 sm:py-14 md:py-20 text-white overflow-hidden">
+              {/* dekorasi belakang */}
+              <div className="absolute inset-0 opacity-20 pointer-events-none">
+                <div className="absolute -top-20 left-1/3 w-64 sm:w-80 h-64 sm:h-80 bg-blue-400/30 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute bottom-0 right-1/4 w-64 sm:w-80 h-64 sm:h-80 bg-indigo-500/30 rounded-full blur-3xl animate-pulse delay-1000" />
+              </div>
+
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 relative z-10">
+                {/* Poster Live Report */}
+                <div className="relative overflow-hidden rounded-3xl bg-white/90 backdrop-blur-md shadow-[0_20px_60px_rgba(0,0,0,0.25)] transition-transform duration-300 hover:scale-[1.01]">
+                  <button
+                    onClick={() => setLiveOpen(true)}
+                    className="relative z-10 flex flex-col md:flex-row items-center gap-6 w-full px-6 sm:px-10 py-8 sm:py-10 text-slate-900 text-left"
+                    aria-haspopup="dialog"
+                    aria-expanded={liveOpen}
+                  >
+                    {/* Left Icon */}
+                    <div className="flex-shrink-0">
+                      <div className="relative w-20 sm:w-24 h-20 sm:h-24 rounded-2xl bg-gradient-to-br from-indigo-200 to-indigo-50 shadow-lg flex items-center justify-center">
+                        <svg
+                          className="w-10 sm:w-12 h-10 sm:h-12 text-indigo-600"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M5 3v18l15-9L5 3z" />
+                        </svg>
+                        <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-red-500 ring-2 ring-white animate-ping" />
+                      </div>
+                    </div>
+
+                    {/* Center Content */}
+                    <div className="flex-1">
+                      <div className="flex flex-col md:flex-row items-start md:items-center gap-3 sm:gap-4">
+                        <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight tracking-tight">
+                          Live Report Sirkulir RT 01 – RT 06
+                        </h3>
+                      </div>
+
+                      <p className="mt-3 text-sm sm:text-base text-slate-700 max-w-full md:max-w-[90%]">
+                        Laporan transparan real-time untuk sirkulir dari setiap
+                        RT, terbuka untuk semua.
+                      </p>
+
+                      {/* Info kecil */}
+                      <div className="mt-4 sm:mt-5 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 text-xs sm:text-sm text-slate-600">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-100/70 text-indigo-800">
+                          ⚡ Realtime Update
+                        </span>
+                        <span className="hidden sm:inline">•</span>
+                        <span>Klik untuk melihat detail laporan</span>
+                      </div>
+                    </div>
+
+                    {/* Chevron */}
+                    <div className="flex-shrink-0 mt-4 md:mt-0 text-slate-500">
+                      <svg
+                        className="w-6 sm:w-8 h-6 sm:h-8"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Sponsor Section */}
+                <div className="mt-10 sm:mt-12 text-center">
+                  <h4 className="text-base sm:text-lg font-semibold text-blue-100 mb-4 tracking-wide uppercase">
+                    Sponsor Pendukung
+                  </h4>
+                  <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+                    <img
+                      src="/indomobil.png"
+                      alt="Sponsor 1"
+                      className="w-32 sm:w-48 h-32 sm:h-48 object-contain p-2 rounded-xl shadow hover:bg-white/30 transition"
+                    />
+                    <img
+                      src="/PNG WHITE.png"
+                      alt="Sponsor 2"
+                      className="w-32 sm:w-48 h-32 sm:h-48 object-contain p-2 rounded-xl shadow hover:bg-white/30 transition"
+                    />
+                    <img
+                      src="/adipura.png"
+                      alt="Sponsor 3"
+                      className="w-32 sm:w-48 h-32 sm:h-48 object-contain p-2 rounded-xl shadow hover:bg-white/30 transition"
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
           </section>
 
           {/* Filters & Actions */}
           <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-10 border border-gray-100">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-              {/* Dari Tanggal */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Dari Tanggal
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-sm"
-                />
+              {/* LIVE BUTTON (di atas 'Dari Tanggal') */}
+              <div className="flex flex-col gap-3">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Dari Tanggal
+                  </label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors shadow-sm"
+                  />
+                </div>
               </div>
 
               {/* Sampai Tanggal */}
@@ -163,6 +268,14 @@ export default function LaporanGuest() {
               </div>
             </div>
           </div>
+          <LiveModal isOpen={liveOpen} onClose={() => setLiveOpen(false)}>
+            {/* children opsional, bisa diisi konten tambahan */}
+            <div className="text-center mt-4">
+              <p className="text-gray-600 dark:text-gray-300">
+                Memuat data sumbangan RT terbaru...
+              </p>
+            </div>
+          </LiveModal>
 
           {/* Stats Overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 px-4 md:px-6">
