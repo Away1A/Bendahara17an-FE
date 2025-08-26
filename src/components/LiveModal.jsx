@@ -77,7 +77,7 @@ const LiveModal = ({ isOpen, onClose }) => {
               sumber: rt?.sumber ?? key,
               total: totalNow,
               previous,
-              pct_of_total: clampPct(rt?.pct_of_total),
+              pct_of_total: rt?.pct_of_total,
               trend: Array.isArray(rt?.trend) ? rt.trend.map(toNumber) : [],
             };
           }) ?? [];
