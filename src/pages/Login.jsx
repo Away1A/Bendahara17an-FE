@@ -76,21 +76,28 @@ export default function Login() {
             <div className="flex items-center gap-4 mb-6">
               <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
                 <img
-                  src="/public/PNG WHITE.png"
+                  src="/PNG WHITE.png"
                   alt="Logo Forum Remaja RW 09"
-                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
                   className="w-full h-full object-cover"
                 />
               </div>
               <div>
-                <h2 className="text-xl font-semibold tracking-tight">Forum Remaja RW 09</h2>
-                <p className="text-sm text-white/70">Panel Panitia • Area Terbatas</p>
+                <h2 className="text-xl font-semibold tracking-tight">
+                  Forum Remaja RW 09
+                </h2>
+                <p className="text-sm text-white/70">
+                  Panel Panitia • Area Terbatas
+                </p>
               </div>
             </div>
 
             <div className="text-center max-w-xs text-sm text-white/60">
               <p className="mb-4">
-                Akses aman untuk pengelolaan acara—gunakan akun panitia untuk fitur penuh.
+                Akses aman untuk pengelolaan acara—gunakan akun panitia untuk
+                fitur penuh.
               </p>
               <div className="mt-3 border-t border-white/6 pt-4 text-xs text-white/50">
                 &copy; {new Date().getFullYear()} Forum Remaja RW 09
@@ -102,22 +109,29 @@ export default function Login() {
             {/* Mobile logo (visible on small screens) */}
             <div className="mb-6 flex items-center justify-center md:justify-start">
               <img
-                src="/public/PNG WHITE.png"          
+                src="/public/PNG WHITE.png"
                 alt="Logo Forum Remaja RW 09"
-                onError={(e) => { e.currentTarget.style.display = "none"; }}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
                 className="block md:hidden w-16 h-16 object-cover rounded-full border border-white/10 shadow-sm"
               />
             </div>
 
             <div className="mb-6 text-center md:text-left">
-              <h1 className="text-2xl md:text-3xl font-semibold text-white">Selamat Datang</h1>
-              <p className="text-sm text-white/70 mt-1">Login untuk mengakses panel panitia</p>
+              <h1 className="text-2xl md:text-3xl font-semibold text-white">
+                Selamat Datang
+              </h1>
+              <p className="text-sm text-white/70 mt-1">
+                Login untuk mengakses panel panitia
+              </p>
             </div>
-
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-white/85 mb-1">Username</label>
+                <label className="block text-sm font-medium text-white/85 mb-1">
+                  Username
+                </label>
                 <div className="relative">
                   <input
                     type="text"
@@ -132,7 +146,9 @@ export default function Login() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/85 mb-1">Password</label>
+                <label className="block text-sm font-medium text-white/85 mb-1">
+                  Password
+                </label>
                 <input
                   type="password"
                   name="password"
@@ -171,14 +187,32 @@ export default function Login() {
                   type="submit"
                   disabled={isLoading}
                   className={`w-full py-3 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/10 transition ${
-                    isLoading ? "bg-white/10 text-white/60 cursor-not-allowed" : "bg-white text-gray-900 hover:scale-[1.01]"
+                    isLoading
+                      ? "bg-white/10 text-white/60 cursor-not-allowed"
+                      : "bg-white text-gray-900 hover:scale-[1.01]"
                   }`}
                 >
                   {isLoading ? (
                     <div className="flex items-center justify-center gap-3">
-                      <svg className="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      <svg
+                        className="animate-spin h-5 w-5 text-gray-900"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        ></path>
                       </svg>
                       <span>Memproses...</span>
                     </div>
@@ -190,7 +224,9 @@ export default function Login() {
             </form>
 
             <div className="mt-6">
-              <div className="text-center text-sm text-white/60 mb-3">Atau lihat sebagai warga</div>
+              <div className="text-center text-sm text-white/60 mb-3">
+                Atau lihat sebagai warga
+              </div>
               <button
                 onClick={handleGuestAccess}
                 className="w-full py-3 rounded-lg border border-white/8 text-white text-sm hover:bg-white/6 focus:outline-none transition"
@@ -209,10 +245,18 @@ export default function Login() {
 
       <style jsx global>{`
         @keyframes fade-in-down {
-          0% { opacity: 0; transform: translateY(-8px); }
-          100% { opacity: 1; transform: translateY(0); }
+          0% {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
-        .animate-fade-in-down { animation: fade-in-down 0.32s ease-out forwards; }
+        .animate-fade-in-down {
+          animation: fade-in-down 0.32s ease-out forwards;
+        }
       `}</style>
     </div>
   );
