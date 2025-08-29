@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import api from "../api";
 import InputGroup from "../components/InputGroup";
-import Table from "../components/Table";
 import SelectKategori from "../components/SelectKategori";
 
 export default function Pemasukan() {
@@ -114,16 +113,6 @@ export default function Pemasukan() {
           {loading ? "Menyimpan..." : "Simpan Pemasukan"}
         </button>
       </form>
-
-      <div className="mt-12 bg-white shadow-xl rounded-2xl p-8 border">
-        <h3 className="text-2xl font-bold mb-4 text-gray-700">
-          Riwayat Pemasukan
-        </h3>
-        <Table
-          data={data}
-          columns={["tanggal", "sumber", "kategori", "jumlah", "keterangan"]}
-        />
-      </div>
     </div>
   );
 }

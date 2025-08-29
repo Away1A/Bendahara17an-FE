@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../api";
 import InputGroup from "../components/InputGroup";
-import Table from "../components/Table";
 import SelectKategori from "../components/SelectKategori";
 
 export default function Pengeluaran() {
